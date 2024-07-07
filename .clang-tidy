@@ -1,0 +1,5 @@
+---
+Checks:          '*,-clang-analyzer-cplusplus*,-llvmlibc-*,-fuchsia-trailing-return,-fuchsia-*'
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+FormatStyle:     file
