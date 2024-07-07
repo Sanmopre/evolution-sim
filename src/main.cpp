@@ -13,6 +13,10 @@ auto main() -> int
         spdlog::info("Starting {} version {}", PROJECT_NAME, PROJECT_VERSION);
         spdlog::debug("Build type: {}", CMAKE_BUILD_TYPE);
         spdlog::debug("CXX compiler: {}", CMAKE_CXX_COMPILER);
+
+        // Start your application here
+
+        spdlog::info("Shutting down {}", PROJECT_NAME);
     } 
     catch (const std::exception& e) 
     {

@@ -4,3 +4,11 @@ This is a project template for C++ projects. It has the barebones to start codin
 
 # How to use
 To build simply tun the build.sh script, this will build the docker image and the to run the application run the run.sh script.
+
+# Things to add to the template
+
+Unit Testing Framework Gtest
+
+Dependency Management vcpkg or conan (maybe)
+
+Documentation Doxygen
