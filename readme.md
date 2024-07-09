@@ -7,8 +7,4 @@ To build simply tun the build.sh script, this will build the docker image and th
 
 # Things to add to the template
 
-Unit Testing Framework Gtest
-
 Dependency Management vcpkg or conan (maybe)
-
-Documentation Doxygen

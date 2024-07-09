@@ -4,7 +4,8 @@
 
 auto main() -> int 
 {
-    try {
+    try 
+    {
         loadConfig();
         setLogPattern();
 
