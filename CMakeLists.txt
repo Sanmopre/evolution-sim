@@ -11,7 +11,8 @@ if(USE_CLANG_TIDY)
     set(CMAKE_CXX_CLANG_TIDY clang-tidy;--fix-errors)
 endif()
 
-include_directories("src/" "external/") 
+include_directories("src/" "external/" "external/lua-5.4.7/src/") 
+add_subdirectory(external/lua-5.4.7)
 
 configure_file(
   "${PROJECT_SOURCE_DIR}/src/global.h.in"
@@ -23,6 +24,8 @@ include_directories("${PROJECT_BINARY_DIR}")
 file(GLOB SOURCES "src/*.cpp" "src/*.hpp")
 
 add_executable(${PROJECT_NAME} ${SOURCES})
+
+target_link_libraries(${PROJECT_NAME} LuaLib)
 
 if(ENABLE_CLANG_FORMAT)
     # Custom target for Clang-Format

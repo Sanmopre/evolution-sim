@@ -1,5 +1,6 @@
 #include "config.h"
 #include "global.h"
+#include "lua.h"
 
 
 auto main() -> int 
@@ -16,6 +17,7 @@ auto main() -> int
         spdlog::debug("CXX compiler: {}", CMAKE_CXX_COMPILER);
 
         // Start your application here
+        testLuaCpp();
 
         spdlog::info("Shutting down {}", PROJECT_NAME);
     } 
