@@ -18,7 +18,7 @@ configure_file(
   "${PROJECT_BINARY_DIR}/src/global.h"
 )
 
-include_directories("${PROJECT_BINARY_DIR}")
+include_directories("${PROJECT_BINARY_DIR}/src/")
 
 file(GLOB SOURCES "src/*.cpp" "src/*.hpp")
 
