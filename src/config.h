@@ -8,6 +8,7 @@
 #include <fstream>
 #include "spdlog/spdlog.h"
 #include "nlohmann/json.hpp"
+#include "backward/backward.hpp"
 
 #define CONFIG_FILE "config.json"
 #define CONFIG_PATH "config/"
@@ -15,6 +16,14 @@
 #define LOG_LEVEL_KEY "logLevel"
 
 nlohmann::json j;
+
+namespace backward
+{
+
+backward::SignalHandling sh;
+
+} // namespace backward
+
 
 class Config
 {
