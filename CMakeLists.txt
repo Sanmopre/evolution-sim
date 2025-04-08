@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(app VERSION 1.0.0)
+project(raygates VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -11,20 +11,24 @@ if(USE_CLANG_TIDY)
     set(CMAKE_CXX_CLANG_TIDY clang-tidy;--fix-errors)
 endif()
 
-include_directories("src/" "external/") 
+include_directories("src/" "external/")
+
+add_subdirectory("external/raylib-5.5")
 
 configure_file(
   "${PROJECT_SOURCE_DIR}/src/global.h.in"
   "${PROJECT_BINARY_DIR}/src/global.h"
 )
 
-include_directories("${PROJECT_BINARY_DIR}/src/")
+include_directories("${PROJECT_BINARY_DIR}/src/" "external/raylib-5.5/src")
 
 file(GLOB SOURCES "src/*.cpp" "src/*.hpp")
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-if(ENABLE_CLANG_FORMAT)
+target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+
+if(USE_CLANG_FORMAT)
     # Custom target for Clang-Format
     add_custom_target(
         clang-format
@@ -35,7 +39,7 @@ if(ENABLE_CLANG_FORMAT)
     )
 endif()
 
-if(USE_CLANG_FORMAT)
+if(BUILD_TESTS)
     # Enable testing with CTest
     enable_testing()
 

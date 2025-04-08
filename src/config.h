@@ -11,7 +11,7 @@
 #include "backward/backward.hpp"
 
 #define CONFIG_FILE "config.json"
-#define CONFIG_PATH "config/"
+#define CONFIG_PATH "../config/"
 
 #define LOG_LEVEL_KEY "logLevel"
 
