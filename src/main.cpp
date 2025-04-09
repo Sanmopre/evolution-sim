@@ -1,9 +1,14 @@
 #include "config.h"
 #include "global.h"
-#include "spdlog/spdlog.h"
-#include <exception>
+#include "window.h"
 
-#include "raylib.h"
+// spdlog
+#include "spdlog/spdlog.h"
+
+// std
+#include <exception>
+#include <memory>
+#include <tuple>
 
 auto main() -> int 
 {
@@ -17,30 +22,16 @@ auto main() -> int
     spdlog::debug("Build type: {}", CMAKE_BUILD_TYPE);
     spdlog::debug("CXX compiler: {}", CMAKE_CXX_COMPILER);
 
-    // Initialize the window
-    const int screenWidth = 800;
-    const int screenHeight = 450;
-    InitWindow(screenWidth, screenHeight, "My First Raylib Window");
 
-    // Set the frame rate
-    SetTargetFPS(60);
+    auto window = std::make_unique<raygates::Window>(Config::getInt("windowWidth"), Config::getInt("windowHeight"), PROJECT_NAME);
 
-    // Main game loop
-    while (!WindowShouldClose()) // Detect window close button or ESC key
+    bool run = true;
+    while (run)
     {
-      // Start drawing
-      BeginDrawing();
-
-      ClearBackground(RAYWHITE);
-      DrawText("Hello, Raylib!", 350, 200, 20, LIGHTGRAY);
-
-      EndDrawing();
+      run = window->update();
     }
 
-    // Clean up
-    CloseWindow();
-
-    // Start your application here
+    std::ignore = window.release();
 
     spdlog::info("Shutting down {}", PROJECT_NAME);
   } 

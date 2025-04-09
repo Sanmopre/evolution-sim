@@ -22,7 +22,7 @@ configure_file(
 
 include_directories("${PROJECT_BINARY_DIR}/src/" "external/raylib-5.5/src")
 
-file(GLOB SOURCES "src/*.cpp" "src/*.hpp")
+file(GLOB SOURCES "src/*.cpp" "src/*.hpp" "src/*.h")
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
