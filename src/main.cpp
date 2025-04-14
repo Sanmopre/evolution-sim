@@ -6,6 +6,8 @@
 #include "spdlog/spdlog.h"
 
 // std
+#include "raygates.h"
+
 #include <exception>
 #include <memory>
 #include <tuple>
@@ -23,15 +25,15 @@ auto main() -> int
     spdlog::debug("CXX compiler: {}", CMAKE_CXX_COMPILER);
 
 
-    auto window = std::make_unique<raygates::Window>(Config::getInt("windowWidth"), Config::getInt("windowHeight"), PROJECT_NAME);
+    auto application = std::make_unique<raygates::Raygates>();
 
     bool run = true;
     while (run)
     {
-      run = window->update();
+      run = application->update();
     }
 
-    std::ignore = window.release();
+    std::ignore = application.release();
 
     spdlog::info("Shutting down {}", PROJECT_NAME);
   } 

@@ -5,6 +5,20 @@
 // fastNoiseLite
 #include "fastNoiseLite/fastNoiseLite.h"
 
+// std
+#include <random>
+
+namespace {
+
+float getRandomFloat(float min = -6.0f, float max = 0.0f) {
+  static std::random_device rd;
+  static std::mt19937 gen(rd()); // Mersenne Twister engine
+  std::uniform_real_distribution<float> dist(min, max);
+  return dist(gen);
+}
+
+}
+
 TerrainGenerator::TerrainGenerator(int width, int height)
 {
 
@@ -13,19 +27,20 @@ TerrainGenerator::TerrainGenerator(int width, int height)
   colorMap_[TerrainType::GRASS] = GREEN;
   colorMap_[TerrainType::DIRT] = BROWN;
   colorMap_[TerrainType::SNOW] = RAYWHITE;
-  colorMap_[TerrainType::SAND] = YELLOW;
-  colorMap_[TerrainType::STONE] = YELLOW;
+  colorMap_[TerrainType::SAND] = Color{239,239, 86, 255};
+  colorMap_[TerrainType::STONE] = Color{152,152, 150, 255};
 
   rangeMap_[TerrainType::DEEP_WATER] = {0.0, 0.16};
-  rangeMap_[TerrainType::WATER] = {0.16, 0.2};
-  rangeMap_[TerrainType::SAND] = {0.2, 0.23};
-  rangeMap_[TerrainType::DIRT] = {0.23, 0.27};
-  rangeMap_[TerrainType::GRASS] = {0.27, 0.8};
-  rangeMap_[TerrainType::STONE] = {0.8, 0.95};
-  rangeMap_[TerrainType::SNOW] = {0.95, 1.0};
+  rangeMap_[TerrainType::WATER] = {0.16, 0.29};
+  rangeMap_[TerrainType::SAND] = {0.29, 0.33};
+  rangeMap_[TerrainType::DIRT] = {0.33, 0.37};
+  rangeMap_[TerrainType::GRASS] = {0.37, 0.75};
+  rangeMap_[TerrainType::STONE] = {0.75, 0.90};
+  rangeMap_[TerrainType::SNOW] = {0.90, 1.0};
 
   // Create and configure FastNoise object
   FastNoiseLite noise;
+  noise.SetSeed(34);
   noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
   noise.SetFrequency(0.001);
 
@@ -33,41 +48,37 @@ TerrainGenerator::TerrainGenerator(int width, int height)
   noise.SetFractalOctaves(8);
   noise.SetFractalLacunarity(1.9);
 
-  // Step 1: Create pixel data in RGBA format
-  unsigned char *pixels =
-      (unsigned char *)malloc(width * height * 4); // 4 bytes per pixel
+  // Create pixel data in RGBA format
+  unsigned char *pixels = (unsigned char *)malloc(width * height * 4);
 
-  float x = -1.0;
-  float y = -1.0;
-
-  for (int i = 0; i < width * height; i++)
+  for (int y = 0; y < height; y++)
   {
-    if (i % (width) == 0)
+    std::vector<TerrainType> terrainTypeLine;
+    terrainTypeLine.reserve(width);
+
+    for (int x = 0; x < width; x++)
     {
-      x = -1.0;
-      y += 1;
-    }
+      const auto noiseValue = (noise.GetNoise((float)x,(float)y) + 1.0)/2.0;
+      Color tileColor = RAYWHITE;
 
-    x += 1.0;
-
-    const auto noiseValue = (noise.GetNoise(x,y) + 1.0)/2.0;
-    Color tileColor = RAYWHITE;
-
-    for (const auto& [key, value] : rangeMap_)
-    {
-      if (noiseValue >= value.min && noiseValue <= value.max)
+      for (const auto& [key, value] : rangeMap_)
       {
-        tileColor = colorMap_[key];
-        break;
+        if (noiseValue >= value.min && noiseValue <= value.max)
+        {
+          tileColor = colorMap_[key];
+          terrainTypeLine.emplace_back(key);
+          break;
+        }
       }
+
+      const auto i = x + (y * width);
+      pixels[(i * 4) + 0] = tileColor.r;
+      pixels[(i * 4)+ 1] = tileColor.g + static_cast<int>(getRandomFloat());
+      pixels[(i * 4) + 2] = tileColor.b + static_cast<int>(getRandomFloat());
+      pixels[(i * 4) + 3] = tileColor.a + static_cast<int>(getRandomFloat());
     }
-
-    pixels[i * 4 + 0] = tileColor.r;
-    pixels[i * 4 + 1] = tileColor.g;
-    pixels[i * 4 + 2] = tileColor.b;
-    pixels[i * 4 + 3] = tileColor.a;
+    terrainType_.emplace_back(terrainTypeLine);
   }
-
 
 
   // Create texture from image

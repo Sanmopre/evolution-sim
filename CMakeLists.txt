@@ -28,10 +28,14 @@ add_executable(${PROJECT_NAME} ${SOURCES}
         src/raygates.cpp
         src/raygates.h
         external/fastNoiseLite/fastNoiseLite.h
-        src/animals/Animal.cpp
-        src/animals/Animal.h
+        src/animals/animal.cpp
+        src/animals/animal.h
         src/terrain_generator.cpp
-        src/terrain_generator.h)
+        src/terrain_generator.h
+        src/animals/rabbit.cpp
+        src/animals/rabbit.h
+        src/animals/wolf.cpp
+        src/animals/wolf.h)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 
