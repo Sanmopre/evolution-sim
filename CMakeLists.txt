@@ -3,7 +3,7 @@ project(raygates VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
-option(USE_CLANG_TIDY "Use clang-tidy for static code analysis" ON)
+option(USE_CLANG_TIDY "Use clang-tidy for static code analysis" OFF)
 option(USE_CLANG_FORMAT "Enable custom target for clang-format" ON)
 option(BUILD_TESTS "Build the unit tests" ON)
 
@@ -24,7 +24,14 @@ include_directories("${PROJECT_BINARY_DIR}/src/" "external/raylib-5.5/src")
 
 file(GLOB SOURCES "src/*.cpp" "src/*.hpp" "src/*.h")
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES}
+        src/raygates.cpp
+        src/raygates.h
+        external/fastNoiseLite/fastNoiseLite.h
+        src/animals/Animal.cpp
+        src/animals/Animal.h
+        src/terrain_generator.cpp
+        src/terrain_generator.h)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 
