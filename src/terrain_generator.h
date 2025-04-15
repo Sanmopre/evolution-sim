@@ -23,7 +23,8 @@ enum class TerrainType
   SNOW
 };
 
-struct MinMaxTerrain {
+struct MinMaxTerrain
+{
   float min;
   float max;
 };
@@ -39,6 +40,7 @@ struct Node
   }
 };
 
+using Path = std::vector<Vector2>;
 
 class TerrainGenerator
 {
@@ -49,14 +51,15 @@ public:
 public:
   [[nodiscard]] const Texture2D& getTerrainTexture() const noexcept;
   [[nodiscard]] TerrainType getTerrainType(Vector2 point) const noexcept;
+  [[nodiscard]] bool isWalkable(Vector2 point) const;
 
 public:
-  [[nodiscard]] std::optional<std::vector<Vector2>> getPathToDestination(Vector2 origin, Vector2 destination) const;
+  [[nodiscard]] std::optional<Path> getPathToDestination(Vector2 origin, Vector2 destination) const;
+  [[nodiscard]] std::vector<Vector2> getTilesInRadius(Vector2 point, int radius) const;
 
 private:
-  [[nodiscard]] bool isWalkable(Vector2 point) const;
   [[nodiscard]] int heuristic(Vector2 pointA, Vector2 pointB) const noexcept;
-  [[nodiscard]] std::vector<Vector2> reconstructPath(std::unordered_map<int, Vector2>& cameFrom,
+  [[nodiscard]] Path reconstructPath(std::unordered_map<int, Vector2>& cameFrom,
     Vector2 end, int width) const;
 
 private:

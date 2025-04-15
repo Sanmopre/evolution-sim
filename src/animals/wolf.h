@@ -5,7 +5,7 @@
 class Wolf : public Animal
 {
 public:
-  Wolf(Vector2 position);
+  Wolf(Vector2 position, const TerrainGenerator& terrainGenerator, const Stats& stats);
 
 };
 

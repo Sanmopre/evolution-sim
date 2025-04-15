@@ -2,6 +2,7 @@
 
 // std
 #include "animals/animal.h"
+#include "plants/plant.h"
 #include "terrain_generator.h"
 
 #include <memory>
@@ -19,7 +20,10 @@ public:
   Window(int width, int height, const std::string& title);
   ~Window();
 
-  [[nodiscard]] bool render(const std::vector<std::shared_ptr<Animal>>& animals, TerrainGenerator* terrain);
+  [[nodiscard]] bool render(const std::vector<std::shared_ptr<Animal>>& animals, const std::vector<std::shared_ptr<Plant>>& plants, TerrainGenerator* terrain);
+
+private:
+  void drawPath(const Path& path)const noexcept;
 
 private:
   bool showMessageBox = false;

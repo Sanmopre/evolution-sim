@@ -43,7 +43,7 @@ TerrainGenerator::TerrainGenerator(int width, int height)
 
   // Create and configure FastNoise object
   FastNoiseLite noise;
-  noise.SetSeed(34);
+  noise.SetSeed(35);
   noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
   noise.SetFrequency(0.001);
 
@@ -100,7 +100,8 @@ const Texture2D &TerrainGenerator::getTerrainTexture() const noexcept
   return generatedTerrainTexture_;
 }
 
-TerrainType TerrainGenerator::getTerrainType(Vector2 point) const noexcept {
+TerrainType TerrainGenerator::getTerrainType(Vector2 point) const noexcept
+{
   return terrainType_[static_cast<int>(point.y)][static_cast<int>(point.x)];
 }
 
@@ -119,10 +120,10 @@ int TerrainGenerator::heuristic(Vector2 pointA, Vector2 pointB) const noexcept {
 
 
 
-std::vector<Vector2> TerrainGenerator::reconstructPath(std::unordered_map<int, Vector2> &cameFrom,
+Path TerrainGenerator::reconstructPath(std::unordered_map<int, Vector2> &cameFrom,
                                   Vector2 end, int width) const
 {
-  std::vector<Vector2> path;
+  Path path;
   int currentKey = end.y * width + end.x;
 
   while (cameFrom.find(currentKey) != cameFrom.end()) {
@@ -136,17 +137,12 @@ std::vector<Vector2> TerrainGenerator::reconstructPath(std::unordered_map<int, V
 }
 
 
-std::optional<std::vector<Vector2>>
+std::optional<Path>
 TerrainGenerator::getPathToDestination(Vector2 origin,
-                                       Vector2 destination) const
-{
-
-  std::cout << "TerrainGenerator::getPathToDestination" << terrainType_.size() << terrainType_[0].size() << std::endl;
- if (!isWalkable(destination))
- {
-   std::cout << "IS NOT WALKABLE";
-   return std::nullopt;
- }
+                                       Vector2 destination) const {
+  if (!isWalkable(destination)) {
+    return std::nullopt;
+  }
 
   int width = terrainType_[0].size();
 
@@ -159,7 +155,7 @@ TerrainGenerator::getPathToDestination(Vector2 origin,
   openSet.push({origin.x, origin.y, 0, heuristic(origin, destination)});
   gScore[key(origin.x, origin.y)] = 0;
 
-  const int dirs[4][2] = { {0,1}, {1,0}, {0,-1}, {-1,0} }; // 4-way movement
+  const int dirs[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}; // 4-way movement
 
   while (!openSet.empty()) {
     Node current = openSet.top();
@@ -168,18 +164,18 @@ TerrainGenerator::getPathToDestination(Vector2 origin,
     if (current.point.x == destination.x && current.point.y == destination.y)
       return reconstructPath(cameFrom, destination, width);
 
-    for (auto& dir : dirs)
-    {
+    for (auto &dir : dirs) {
       Vector2 n = current.point;
       n.x += dir[0];
       n.y += dir[1];
 
-      if (!isWalkable(n)) continue;
+      if (!isWalkable(n))
+        continue;
 
       int tentative_g = gScore[key(current.point.x, current.point.y)] + 1;
 
-      if (gScore.find(key(n.x, n.y)) == gScore.end() || tentative_g < gScore[key(n.x, n.y)])
-      {
+      if (gScore.find(key(n.x, n.y)) == gScore.end() ||
+          tentative_g < gScore[key(n.x, n.y)]) {
         cameFrom[key(n.x, n.y)] = {current.point.x, current.point.y};
         gScore[key(n.x, n.y)] = tentative_g;
         int f = tentative_g + heuristic(n, destination);
@@ -189,5 +185,29 @@ TerrainGenerator::getPathToDestination(Vector2 origin,
   }
 
   return {}; // no path found
+}
 
+std::vector<Vector2> TerrainGenerator::getTilesInRadius(Vector2 point,
+                                                        int radius) const
+{
+  std::vector<Vector2> result;
+
+  int minY = std::max(0, static_cast<int>(point.y - radius));
+  int maxY = std::min((int)terrainType_.size() - 1, static_cast<int>(point.y + radius));
+  int minX = std::max(0, static_cast<int>(point.x - radius));
+  int maxX = std::min((int)terrainType_[0].size() - 1, static_cast<int>(point.x + radius));
+
+  float radiusSq = radius * radius;
+
+  for (int y = minY; y <= maxY; ++y) {
+    for (int x = minX; x <= maxX; ++x) {
+      float dx = point.x - x;
+      float dy = point.y - y;
+      if (dx * dx + dy * dy <= radiusSq) {
+        result.emplace_back(Vector2{x, y});
+      }
+    }
+  }
+
+  return result;
 }
