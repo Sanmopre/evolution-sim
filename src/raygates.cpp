@@ -8,6 +8,8 @@
 #include "animals/wolf.h"
 
 #include <global.h>
+#include <iostream>
+#include <ostream>
 #include <random>
 
 namespace raygates
@@ -32,7 +34,18 @@ Raygates::Raygates()
 
   terrainGenerator_ = std::make_unique<TerrainGenerator>(1920, 1080);
 
-  for (int i = 0; i < 1000; i++)
+  Vector2 origin = {120, 560};
+  Vector2 dest = {700, 700};
+  auto a = terrainGenerator_->getPathToDestination(origin, dest);
+
+  if (a.has_value()) {
+    for (const auto& path : a.value())
+    {
+      std::cout << path.x << ", " << path.y << std::endl;
+    }
+  }
+
+  for (int i = 0; i < 10; i++)
   {
     Vector2 position{getRandomFloat(0.0f, 1920.0f), getRandomFloat(0.0f, 1080.0f)};
     animals_.emplace_back(std::make_shared<Rabbit>(position));

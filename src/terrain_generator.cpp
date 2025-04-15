@@ -6,6 +6,9 @@
 #include "fastNoiseLite/fastNoiseLite.h"
 
 // std
+#include <algorithm>
+#include <iostream>
+#include <ostream>
 #include <random>
 
 namespace {
@@ -97,7 +100,94 @@ const Texture2D &TerrainGenerator::getTerrainTexture() const noexcept
   return generatedTerrainTexture_;
 }
 
-TerrainType TerrainGenerator::getTerrainType(int x, int y) const noexcept
+TerrainType TerrainGenerator::getTerrainType(Vector2 point) const noexcept {
+  return terrainType_[static_cast<int>(point.y)][static_cast<int>(point.x)];
+}
+
+bool TerrainGenerator::isWalkable(Vector2 point) const {
+  if (point.y < 0 || point.y >= terrainType_.size() || point.x < 0 ||
+      point.x >= terrainType_[0].size())
+    return false;
+
+  const TerrainType t = getTerrainType(point);
+  return !(t == TerrainType::WATER || t == TerrainType::DEEP_WATER);
+}
+
+int TerrainGenerator::heuristic(Vector2 pointA, Vector2 pointB) const noexcept {
+  return std::abs(pointA.x - pointB.x) + std::abs(pointA.y - pointB.y);
+}
+
+
+
+std::vector<Vector2> TerrainGenerator::reconstructPath(std::unordered_map<int, Vector2> &cameFrom,
+                                  Vector2 end, int width) const
 {
-  return terrainType_[y][x];
+  std::vector<Vector2> path;
+  int currentKey = end.y * width + end.x;
+
+  while (cameFrom.find(currentKey) != cameFrom.end()) {
+    auto point = cameFrom[currentKey];
+    path.emplace_back(point);
+    currentKey = point.y * width + point.x;
+  }
+
+  std::reverse(path.begin(), path.end());
+  return path;
+}
+
+
+std::optional<std::vector<Vector2>>
+TerrainGenerator::getPathToDestination(Vector2 origin,
+                                       Vector2 destination) const
+{
+
+  std::cout << "TerrainGenerator::getPathToDestination" << terrainType_.size() << terrainType_[0].size() << std::endl;
+ if (!isWalkable(destination))
+ {
+   std::cout << "IS NOT WALKABLE";
+   return std::nullopt;
+ }
+
+  int width = terrainType_[0].size();
+
+  std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
+  std::unordered_map<int, int> gScore;
+  std::unordered_map<int, Vector2> cameFrom;
+
+  auto key = [&](int x, int y) { return y * width + x; };
+
+  openSet.push({origin.x, origin.y, 0, heuristic(origin, destination)});
+  gScore[key(origin.x, origin.y)] = 0;
+
+  const int dirs[4][2] = { {0,1}, {1,0}, {0,-1}, {-1,0} }; // 4-way movement
+
+  while (!openSet.empty()) {
+    Node current = openSet.top();
+    openSet.pop();
+
+    if (current.point.x == destination.x && current.point.y == destination.y)
+      return reconstructPath(cameFrom, destination, width);
+
+    for (auto& dir : dirs)
+    {
+      Vector2 n = current.point;
+      n.x += dir[0];
+      n.y += dir[1];
+
+      if (!isWalkable(n)) continue;
+
+      int tentative_g = gScore[key(current.point.x, current.point.y)] + 1;
+
+      if (gScore.find(key(n.x, n.y)) == gScore.end() || tentative_g < gScore[key(n.x, n.y)])
+      {
+        cameFrom[key(n.x, n.y)] = {current.point.x, current.point.y};
+        gScore[key(n.x, n.y)] = tentative_g;
+        int f = tentative_g + heuristic(n, destination);
+        openSet.push({n.x, n.y, tentative_g, f});
+      }
+    }
+  }
+
+  return {}; // no path found
+
 }
