@@ -57,11 +57,49 @@ Raygates::Raygates(Config* config) : config_(config)
   , window(windowWidth_, windowHeight_, PROJECT_NAME)
 {
   terrainGenerator_ = std::make_unique<TerrainGenerator>(mapWidth_, mapHeight_);
+  terrainLoadingThread_ = std::thread(&TerrainGenerator::generate, terrainGenerator_.get());
+}
 
+Raygates::~Raygates()
+{
+
+}
+
+bool Raygates::update()
+{
+  if (!hasTerrainFinishedGenerating_)
+  {
+    if (terrainGenerator_->getLoadingProgress() == 100.0f)
+    {
+      terrainLoadingThread_.join();
+      terrainGenerator_->createTextureFromImage();
+      initSimulation();
+      hasTerrainFinishedGenerating_ = true;
+      return true;
+    }
+
+    std::cout << "NOT LOADED!" << std::endl;
+    window.renderLoadingScreen(terrainGenerator_->getLoadingProgress());
+    hasTerrainFinishedGenerating_ = false;
+    return true;
+  }
+
+  for (const auto &animal : animals_) {
+    std::ignore = animal->update();
+  }
+
+  for (const auto &plant : plants_) {
+    std::ignore = plant->update();
+  }
+
+  return window.render(animals_, plants_, terrainGenerator_.get());
+}
+
+void Raygates::initSimulation()
+{
   Stats stats;
   stats.speed = 0.2f;
   stats.visibilityRadius = 15;
-
 
   for (int i = 0; i < 70; i++)
   {
@@ -76,26 +114,6 @@ Raygates::Raygates(Config* config) : config_(config)
     const auto plant = std::make_shared<Plant>(position, "../resources/textures/herb.png");
     plants_.emplace_back(plant);
   }
-}
-
-Raygates::~Raygates()
-{
-
-}
-
-bool Raygates::update()
-{
-  for (const auto& animal : animals_)
-  {
-    std::ignore = animal->update();
-  }
-
-  for (const auto& plant: plants_)
-  {
-    std::ignore = plant->update();
-  }
-
-  return window.render(animals_, plants_, terrainGenerator_.get());
 }
 
 } // namespace raygates

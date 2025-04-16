@@ -21,7 +21,7 @@ public:
   ~Window();
 
   [[nodiscard]] bool render(const std::vector<std::shared_ptr<Animal>>& animals, const std::vector<std::shared_ptr<Plant>>& plants, TerrainGenerator* terrain);
-
+  void renderLoadingScreen(float value);
 private:
   void drawPath(const Path& path)const noexcept;
 

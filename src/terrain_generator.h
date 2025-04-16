@@ -4,13 +4,14 @@
 #include "raylib.h"
 
 // std
+#include <atomic>
+#include <cmath>
+#include <limits>
 #include <map>
 #include <optional>
-#include <vector>
-#include <cmath>
 #include <queue>
 #include <unordered_map>
-#include <limits>
+#include <vector>
 
 enum class TerrainType
 {
@@ -46,7 +47,12 @@ class TerrainGenerator
 {
 public:
   TerrainGenerator(int width, int height);
+  void generate();
+  void createTextureFromImage();
   ~TerrainGenerator() = default;
+
+public:
+  [[nodiscard]] float getLoadingProgress() const noexcept;
 
 public:
   [[nodiscard]] const Texture2D& getTerrainTexture() const noexcept;
@@ -63,9 +69,12 @@ private:
     Vector2 end, int width) const;
 
 private:
-
+  int width_;
+  int height_;
+  Image image_;
   Texture2D generatedTerrainTexture_;
   std::map<TerrainType, Color> colorMap_;
   std::map<TerrainType, MinMaxTerrain> rangeMap_;
   std::vector<std::vector<TerrainType>> terrainType_;
+  std::atomic<float> loadingProgress_;
 };

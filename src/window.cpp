@@ -53,28 +53,27 @@ Window::~Window() {
   CloseWindow();
 }
 
-bool Window::render(const std::vector<std::shared_ptr<Animal>> &animals, const std::vector<std::shared_ptr<Plant>>& plants,
+bool Window::render(const std::vector<std::shared_ptr<Animal>> &animals,
+                    const std::vector<std::shared_ptr<Plant>> &plants,
                     TerrainGenerator *terrain) {
   if (WindowShouldClose()) {
     return false;
   }
 
-  if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-  {
+  if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
     Vector2 delta = GetMouseDelta();
-    delta = Vector2Scale(delta, -1.0f/camera_.zoom);
+    delta = Vector2Scale(delta, -1.0f / camera_.zoom);
     camera_.target = Vector2Add(camera_.target, delta);
   }
 
-  if (float wheel = GetMouseWheelMove(); wheel != 0)
-  {
+  if (float wheel = GetMouseWheelMove(); wheel != 0) {
     Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera_);
 
     camera_.offset = GetMousePosition();
     camera_.target = mouseWorldPos;
 
-    float scale = 0.2f*wheel;
-    camera_.zoom = Clamp(expf(logf(camera_.zoom)+scale), 1.0f, 64.0f);
+    float scale = 0.2f * wheel;
+    camera_.zoom = Clamp(expf(logf(camera_.zoom) + scale), 1.0f, 64.0f);
   }
 
   BeginDrawing();
@@ -83,8 +82,7 @@ bool Window::render(const std::vector<std::shared_ptr<Animal>> &animals, const s
   BeginMode2D(camera_);
   DrawTexture(terrain->getTerrainTexture(), 0, 0, WHITE);
 
-  for (const auto &animal : animals)
-  {
+  for (const auto &animal : animals) {
     const auto animalPosition = animal->getPosition();
 
     // Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin,
@@ -96,14 +94,16 @@ bool Window::render(const std::vector<std::shared_ptr<Animal>> &animals, const s
         (static_cast<float>(animal->getTexture().width) / 3.0f) / camera_.zoom,
         (static_cast<float>(animal->getTexture().height) / 3.0f) /
             camera_.zoom};
-  Vector2 origin = {static_cast<float>(animal->getTexture().width) / 2.0f / 3.0f / camera_.zoom, static_cast<float>(animal->getTexture().height) / 2.0f / 3.0f / camera_.zoom};
+    Vector2 origin = {static_cast<float>(animal->getTexture().width) / 2.0f /
+                          3.0f / camera_.zoom,
+                      static_cast<float>(animal->getTexture().height) / 2.0f /
+                          3.0f / camera_.zoom};
 
     DrawTexturePro(animal->getTexture(), source, destination, origin, 0.0f,
                    WHITE);
   }
 
-  for (const auto &plant : plants)
-  {
+  for (const auto &plant : plants) {
     const auto plantPosition = plant->getPosition();
 
     // Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin,
@@ -111,11 +111,13 @@ bool Window::render(const std::vector<std::shared_ptr<Animal>> &animals, const s
     Rectangle source = {0, 0, static_cast<float>(plant->getTexture().width),
                         static_cast<float>(plant->getTexture().height)};
     Rectangle destination = {
-      plantPosition.x, plantPosition.y,
-      (static_cast<float>(plant->getTexture().width) / 3.0f) / camera_.zoom,
-      (static_cast<float>(plant->getTexture().height) / 3.0f) /
-          camera_.zoom};
-    Vector2 origin = {static_cast<float>(plant->getTexture().width) / 2.0f / 3.0f / camera_.zoom, static_cast<float>(plant->getTexture().height) / 2.0f / 3.0f / camera_.zoom};
+        plantPosition.x, plantPosition.y,
+        (static_cast<float>(plant->getTexture().width) / 3.0f) / camera_.zoom,
+        (static_cast<float>(plant->getTexture().height) / 3.0f) / camera_.zoom};
+    Vector2 origin = {static_cast<float>(plant->getTexture().width) / 2.0f /
+                          3.0f / camera_.zoom,
+                      static_cast<float>(plant->getTexture().height) / 2.0f /
+                          3.0f / camera_.zoom};
 
     DrawTexturePro(plant->getTexture(), source, destination, origin, 0.0f,
                    WHITE);
@@ -125,6 +127,20 @@ bool Window::render(const std::vector<std::shared_ptr<Animal>> &animals, const s
   EndDrawing();
 
   return true;
+}
+
+void Window::renderLoadingScreen(float value)
+{
+  if (WindowShouldClose())
+  {
+    return ;
+  }
+
+  BeginDrawing();
+  ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+  Rectangle bounds = {0, 0, 1920, 1080};
+  GuiProgressBar(bounds, "0%", "100%", &value, 0.0, 100.0);
+  EndDrawing();
 }
 
 void Window::drawPath(const Path& path) const noexcept

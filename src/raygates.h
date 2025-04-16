@@ -19,6 +19,10 @@ public:
   [[nodiscard]] bool update();
 
 private:
+  void initSimulation();
+
+private:
+  std::thread terrainLoadingThread_;
   Config* config_;
   int windowWidth_;
   int windowHeight_;
@@ -29,6 +33,7 @@ private:
   std::vector<std::shared_ptr<Animal>> animals_;
   std::vector<std::shared_ptr<Plant>> plants_;
 
+  bool hasTerrainFinishedGenerating_ = false;
 };
 
 }

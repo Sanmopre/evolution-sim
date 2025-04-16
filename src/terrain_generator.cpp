@@ -23,15 +23,20 @@ float getRandomFloat(float min = -6.0f, float max = 0.0f) {
 }
 
 TerrainGenerator::TerrainGenerator(int width, int height)
+  : width_(width), height_(height)
 {
+
+}
+
+void TerrainGenerator::generate() {
 
   colorMap_[TerrainType::DEEP_WATER] = DARKBLUE;
   colorMap_[TerrainType::WATER] = BLUE;
   colorMap_[TerrainType::GRASS] = GREEN;
   colorMap_[TerrainType::DIRT] = BROWN;
   colorMap_[TerrainType::SNOW] = RAYWHITE;
-  colorMap_[TerrainType::SAND] = Color{239,239, 86, 255};
-  colorMap_[TerrainType::STONE] = Color{152,152, 150, 255};
+  colorMap_[TerrainType::SAND] = Color{239, 239, 86, 255};
+  colorMap_[TerrainType::STONE] = Color{152, 152, 150, 255};
 
   rangeMap_[TerrainType::DEEP_WATER] = {0.0, 0.16};
   rangeMap_[TerrainType::WATER] = {0.16, 0.29};
@@ -52,47 +57,53 @@ TerrainGenerator::TerrainGenerator(int width, int height)
   noise.SetFractalLacunarity(1.9);
 
   // Create pixel data in RGBA format
-  unsigned char *pixels = (unsigned char *)malloc(width * height * 4);
+  unsigned char *pixels = (unsigned char *)malloc(width_ * height_ * 4);
 
-  for (int y = 0; y < height; y++)
+  for (int y = 0; y < height_; y++)
   {
     std::vector<TerrainType> terrainTypeLine;
-    terrainTypeLine.reserve(width);
+    terrainTypeLine.reserve(width_);
 
-    for (int x = 0; x < width; x++)
+    for (int x = 0; x < width_; x++)
     {
-      const auto noiseValue = (noise.GetNoise((float)x,(float)y) + 1.0)/2.0;
+      const auto noiseValue = (noise.GetNoise((float)x, (float)y) + 1.0) / 2.0;
       Color tileColor = RAYWHITE;
 
-      for (const auto& [key, value] : rangeMap_)
-      {
-        if (noiseValue >= value.min && noiseValue <= value.max)
-        {
+      for (const auto &[key, value] : rangeMap_) {
+        if (noiseValue >= value.min && noiseValue <= value.max) {
           tileColor = colorMap_[key];
           terrainTypeLine.emplace_back(key);
           break;
         }
       }
 
-      const auto i = x + (y * width);
+      const auto i = x + (y * width_);
       pixels[(i * 4) + 0] = tileColor.r;
-      pixels[(i * 4)+ 1] = tileColor.g + static_cast<int>(getRandomFloat());
+      pixels[(i * 4) + 1] = tileColor.g + static_cast<int>(getRandomFloat());
       pixels[(i * 4) + 2] = tileColor.b + static_cast<int>(getRandomFloat());
       pixels[(i * 4) + 3] = tileColor.a + static_cast<int>(getRandomFloat());
+
+      loadingProgress_ = static_cast<float>(i) / static_cast<float>(width_ * height_) * 100.0;
     }
     terrainType_.emplace_back(terrainTypeLine);
   }
+  loadingProgress_ = 100.0f;
 
+   image_ = {.data = pixels,
+                       .width = width_,
+                       .height = height_,
+                       .mipmaps = 1,
+                       .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
+}
 
-  // Create texture from image
-  const Image image = {.data = pixels,
-                 .width = width,
-                 .height = height,
-                 .mipmaps = 1,
-                 .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
+void TerrainGenerator::createTextureFromImage() {
+  generatedTerrainTexture_ = LoadTextureFromImage(image_);
+  UnloadImage(image_);
+}
 
-  generatedTerrainTexture_ = LoadTextureFromImage(image);
-  UnloadImage(image);
+float TerrainGenerator::getLoadingProgress() const noexcept
+{
+  return loadingProgress_;
 }
 
 const Texture2D &TerrainGenerator::getTerrainTexture() const noexcept
@@ -140,7 +151,8 @@ Path TerrainGenerator::reconstructPath(std::unordered_map<int, Vector2> &cameFro
 std::optional<Path>
 TerrainGenerator::getPathToDestination(Vector2 origin,
                                        Vector2 destination) const {
-  if (!isWalkable(destination)) {
+  if (!isWalkable(destination))
+  {
     return std::nullopt;
   }
 
