@@ -20,6 +20,7 @@ public:
 
 private:
   void initSimulation();
+  void updateEntities();
 
 private:
   std::thread terrainLoadingThread_;
@@ -33,6 +34,8 @@ private:
   int mapWidth_;
   int mapHeight_;
   int targetFPS_ = 0;
+  float expectedDeltaTime_;
+  int simulationSpeed_;
   Window window;
 
 private:

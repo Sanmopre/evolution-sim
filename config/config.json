@@ -1,6 +1,6 @@
 {
     "logLevel": "info",
-    "targetFPS": 120,
+    "targetFPS": 200,
     "window" :
     {
         "width": 1280,
@@ -13,10 +13,11 @@
     },
     "simulation":
     {
+        "speed": 1,
         "rabbit":
         {
-            "initialNumber": 500,
-            "speed": 15.0,
+            "initialNumber": 100,
+            "speed": 10.0,
             "visibilityRadius": 15
         },
         "herb":

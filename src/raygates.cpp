@@ -55,6 +55,8 @@ Raygates::Raygates(Config* config) : config_(config)
 , mapWidth_(config->get()["map"]["width"].get<int>())
 , mapHeight_(config->get()["map"]["height"].get<int>())
 , targetFPS_(config->get()["targetFPS"].get<int>())
+, expectedDeltaTime_(1.0f / static_cast<float>(targetFPS_))
+, simulationSpeed_(config_->get()["simulation"]["speed"].get<int>())
   , window(windowWidth_, windowHeight_, PROJECT_NAME, targetFPS_)
 {
 
@@ -77,8 +79,6 @@ Raygates::~Raygates()
 
 bool Raygates::update()
 {
-  const auto expectedDt = 1.0f / static_cast<float>(targetFPS_);
-
   if (!hasTerrainFinishedGenerating_)
   {
     if (terrainGenerator_->getLoadingProgress() >= 100.0f)
@@ -94,37 +94,50 @@ bool Raygates::update()
     return window.renderLoadingScreen(terrainGenerator_->getLoadingProgress());
   }
 
+  for (int i = 0; i < simulationSpeed_; i++)
+  {
+    updateEntities();
+  }
+  return window.render(animals_, plants_, terrainGenerator_.get());
+}
+
+void Raygates::initSimulation() {
+  Stats stats;
+  stats.speed = config_->get()["simulation"]["rabbit"]["speed"].get<float>();
+  stats.visibilityRadius =
+      config_->get()["simulation"]["rabbit"]["visibilityRadius"].get<int>();
+
+  for (int i = 0;
+       i < config_->get()["simulation"]["rabbit"]["initialNumber"].get<int>();
+       i++) {
+    Vector2 position = getRandomWalkablePosition(terrainGenerator_.get(),
+                                                 mapWidth_, mapHeight_);
+    const auto rabbit = std::make_shared<Rabbit>(
+        position, resourceMap_.at("rabbit"), *terrainGenerator_.get(), stats);
+    animals_.emplace_back(rabbit);
+  }
+
+  for (int i = 0;
+       i < config_->get()["simulation"]["herb"]["initialNumber"].get<int>();
+       i++) {
+    Vector2 position = getRandomPositionOfType(
+        terrainGenerator_.get(), TerrainType::GRASS, mapWidth_, mapHeight_);
+    const auto plant =
+        std::make_shared<Plant>(position, resourceMap_.at("herb"));
+    plants_.emplace_back(plant);
+  }
+}
+
+void Raygates::updateEntities()
+{
   for (const auto &animal : animals_)
   {
-    std::ignore = animal->update(expectedDt);
+    std::ignore = animal->update(expectedDeltaTime_);
   }
 
   for (const auto &plant : plants_)
   {
     std::ignore = plant->update();
-  }
-
-  return window.render(animals_, plants_, terrainGenerator_.get());
-}
-
-void Raygates::initSimulation()
-{
-  Stats stats;
-  stats.speed = config_->get()["simulation"]["rabbit"]["speed"].get<float>();
-  stats.visibilityRadius = config_->get()["simulation"]["rabbit"]["visibilityRadius"].get<int>();
-
-  for (int i = 0; i < config_->get()["simulation"]["rabbit"]["initialNumber"].get<int>(); i++)
-  {
-    Vector2 position = getRandomWalkablePosition(terrainGenerator_.get(), mapWidth_, mapHeight_);
-    const auto rabbit = std::make_shared<Rabbit>(position,resourceMap_.at("rabbit"), *terrainGenerator_.get(), stats);
-    animals_.emplace_back(rabbit);
-  }
-
-  for (int i = 0; i < config_->get()["simulation"]["herb"]["initialNumber"].get<int>(); i++)
-  {
-    Vector2 position = getRandomPositionOfType(terrainGenerator_.get(), TerrainType::GRASS ,mapWidth_, mapHeight_);
-    const auto plant = std::make_shared<Plant>(position, resourceMap_.at("herb"));
-    plants_.emplace_back(plant);
   }
 }
 
