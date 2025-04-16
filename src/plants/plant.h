@@ -2,12 +2,12 @@
 #include "raylib.h"
 
 // std
-#include <string>
+#include <memory>
 
 class Plant
 {
 public:
-  Plant(Vector2 position, const std::string& texturePath);
+  Plant(Vector2 position, std::shared_ptr<Texture2D> texture);
 
   [[nodiscard]] const Vector2& getPosition() const noexcept;
   [[nodiscard]] const Texture2D& getTexture() const noexcept;
@@ -16,5 +16,5 @@ public:
 
 private:
   Vector2 position_;
-  Texture2D texture_;
+  std::shared_ptr<Texture2D> texture_;
 };

@@ -19,28 +19,11 @@
 namespace raygates
 {
 
-
-namespace
-{
-
-float exponentialScale(float x) {
-  // Normalize to [0, 1]
-  float normalized = (x - 1.0f) / (20.0f - 1.0f);
-
-  // Apply power curve — try exponent > 1 for slow start
-  float curved = std::pow(normalized, 2.0f); // square it
-
-  // Map back to [1, 20]
-  return 1.0f + curved * (20.0f - 1.0f);
-}
-
-}
-
-
-Window::Window(int width, int height, const std::string &title)
+Window::Window(int width, int height, const std::string &title, int targetFps)
+  : width_(width) , height_(height)
 {
   InitWindow(width, height, title.c_str());
-  SetTargetFPS(60);
+  SetTargetFPS(targetFps);
   GuiLoadStyleTerminal();
 
   camera_.offset = Vector2{0, 0};
@@ -66,14 +49,15 @@ bool Window::render(const std::vector<std::shared_ptr<Animal>> &animals,
     camera_.target = Vector2Add(camera_.target, delta);
   }
 
-  if (float wheel = GetMouseWheelMove(); wheel != 0) {
+  if (float wheel = GetMouseWheelMove(); wheel != 0)
+  {
     Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera_);
 
     camera_.offset = GetMousePosition();
     camera_.target = mouseWorldPos;
 
     float scale = 0.2f * wheel;
-    camera_.zoom = Clamp(expf(logf(camera_.zoom) + scale), 1.0f, 64.0f);
+    camera_.zoom = Clamp(expf(logf(camera_.zoom) + scale), 0.125f, 64.0f);
   }
 
   BeginDrawing();
@@ -129,18 +113,25 @@ bool Window::render(const std::vector<std::shared_ptr<Animal>> &animals,
   return true;
 }
 
-void Window::renderLoadingScreen(float value)
+bool Window::renderLoadingScreen(float value) const noexcept
 {
   if (WindowShouldClose())
   {
-    return ;
+    return false;
   }
 
   BeginDrawing();
   ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-  Rectangle bounds = {0, 0, 1920, 1080};
-  GuiProgressBar(bounds, "0%", "100%", &value, 0.0, 100.0);
+  constexpr std::string_view text = "Generating map...";
+  int fontSize = 50;
+  int textWidth = MeasureText(std::string(text).c_str(), fontSize);
+  Vector2 progressBarSize = {width_ * 0.75f, height_ * 0.1f };
+  Rectangle bounds = {(width_ - progressBarSize.x) / 2, (height_ - progressBarSize.y) / 2, progressBarSize.x, progressBarSize.y};
+  GuiProgressBar(bounds, "", "", &value, 0.0, 100.0);
+  DrawText("Generating map...", (width_ - textWidth) / 2, ((height_ - progressBarSize.y) / 2) - 60.0f  , fontSize, RAYWHITE);
   EndDrawing();
+
+  return true;
 }
 
 void Window::drawPath(const Path& path) const noexcept

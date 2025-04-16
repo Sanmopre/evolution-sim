@@ -24,11 +24,11 @@ namespace
 
 }
 
-Animal::Animal(Vector2 position, const std::string& texturePath, const TerrainGenerator& terrainGenerator, const Stats& stats)
+Animal::Animal(Vector2 position, std::shared_ptr<Texture2D> texture, const TerrainGenerator& terrainGenerator, const Stats& stats)
   :
     terrainGenerator_(terrainGenerator)
   , position_(position)
-  , texture_(LoadTexture(texturePath.c_str()))
+  , texture_(texture)
   , stats_(stats)
 {
 
@@ -39,7 +39,7 @@ const Vector2 &Animal::getPosition() const noexcept {
 }
 
 const Texture2D &Animal::getTexture() const noexcept {
-  return texture_;
+  return *texture_;
 }
 
 void Animal::setNextRelativePosition(
@@ -61,7 +61,7 @@ void Animal::setNextDestinationPosition(
   }
 }
 
-bool Animal::update()
+bool Animal::update(float dt)
 {
   switch (state_)
   {
@@ -69,16 +69,16 @@ bool Animal::update()
      setNextDestinationPosition(getRandomWalkablePosition(terrainGenerator_, terrainGenerator_.getTilesInRadius(position_, stats_.visibilityRadius)));
     break;
   case State::RUNNING:
-    updatePosition();
+    updatePosition(dt);
     break;
   case State::WANDERING:
-    updatePosition();
+    updatePosition(dt);
     break;
   case State::IN_SEARCH_FOR_PARTNER:
-    updatePosition();
+    updatePosition(dt);
     break;
   case State::IN_SEARCH_FOR_RESOURCES:
-    updatePosition();
+    updatePosition(dt);
     break;
   default:
     break;
@@ -87,7 +87,7 @@ bool Animal::update()
   return true;
 }
 
-void Animal::updatePosition()
+void Animal::updatePosition(float dt)
 {
   if (currentPath_.empty())
   {
@@ -95,7 +95,7 @@ void Animal::updatePosition()
     return;
   }
 
-  tilesToMoveThisFrame_ += stats_.speed;
+  tilesToMoveThisFrame_ += stats_.speed * dt;
   const auto tilesToMove = static_cast<int>(tilesToMoveThisFrame_);
 
   if (tilesToMove > 0)

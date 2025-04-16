@@ -4,6 +4,7 @@
 // std
 #include "terrain_generator.h"
 
+#include <memory>
 #include <string>
 
 
@@ -32,7 +33,7 @@ enum class State
 class Animal
 {
 public:
-  Animal(Vector2 position, const std::string& texturePath, const TerrainGenerator& terrainGenerator, const Stats& stats);
+  Animal(Vector2 position, std::shared_ptr<Texture2D> texture, const TerrainGenerator& terrainGenerator, const Stats& stats);
 
   [[nodiscard]] const Vector2& getPosition() const noexcept;
   [[nodiscard]] const Texture2D& getTexture() const noexcept;
@@ -40,15 +41,15 @@ public:
   void setNextRelativePosition(const Vector2& nextRelativePosition) noexcept;
   void setNextDestinationPosition(const Vector2& nextDestinationPosition) noexcept;
 
-  [[nodiscard]] bool update();
+  [[nodiscard]] bool update(float dt);
 
 private:
-  void updatePosition();
+  void updatePosition(float dt);
 
 private:
   const TerrainGenerator& terrainGenerator_;
   Vector2 position_;
-  Texture2D texture_;
+  std::shared_ptr<Texture2D> texture_;
 
 private:
   Stats stats_;

@@ -1,7 +1,7 @@
 #include "plant.h"
 
-Plant::Plant(Vector2 position, const std::string &texturePath)
-  : position_(position), texture_(LoadTexture(texturePath.c_str()))
+Plant::Plant(Vector2 position, std::shared_ptr<Texture2D> texture)
+  : position_(position), texture_(texture)
 {
 }
 
@@ -12,7 +12,7 @@ const Vector2 &Plant::getPosition() const noexcept
 
 const Texture2D &Plant::getTexture() const noexcept
 {
-  return texture_;
+  return *texture_;
 }
 
 bool Plant::update()

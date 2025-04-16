@@ -1,13 +1,27 @@
 {
     "logLevel": "info",
+    "targetFPS": 120,
     "window" :
     {
-        "width": 1920,
-        "height": 1080
+        "width": 1280,
+        "height": 720
     },
     "map" :
     {
-        "width": 1920,
-        "height": 1080
+        "width": 1280,
+        "height": 720
+    },
+    "simulation":
+    {
+        "rabbit":
+        {
+            "initialNumber": 500,
+            "speed": 15.0,
+            "visibilityRadius": 15
+        },
+        "herb":
+        {
+            "initialNumber": 130
+        }
     }
 }

@@ -54,22 +54,34 @@ Raygates::Raygates(Config* config) : config_(config)
 , windowHeight_(config->get()["window"]["height"].get<int>())
 , mapWidth_(config->get()["map"]["width"].get<int>())
 , mapHeight_(config->get()["map"]["height"].get<int>())
-  , window(windowWidth_, windowHeight_, PROJECT_NAME)
+, targetFPS_(config->get()["targetFPS"].get<int>())
+  , window(windowWidth_, windowHeight_, PROJECT_NAME, targetFPS_)
 {
+
+  resourceMap_["rabbit"] = std::make_shared<Texture2D>(LoadTexture("../resources/textures/rabbit.png"));
+  resourceMap_["wolf"] = std::make_shared<Texture2D>(LoadTexture("../resources/textures/wolf.png"));
+  resourceMap_["herb"] = std::make_shared<Texture2D>(LoadTexture("../resources/textures/herb.png"));
+
   terrainGenerator_ = std::make_unique<TerrainGenerator>(mapWidth_, mapHeight_);
   terrainLoadingThread_ = std::thread(&TerrainGenerator::generate, terrainGenerator_.get());
 }
 
 Raygates::~Raygates()
 {
-
+  terrainLoadingThread_.join();
+  for (const auto& [key, value] : resourceMap_)
+  {
+    UnloadTexture(*value);
+  }
 }
 
 bool Raygates::update()
 {
+  const auto expectedDt = 1.0f / static_cast<float>(targetFPS_);
+
   if (!hasTerrainFinishedGenerating_)
   {
-    if (terrainGenerator_->getLoadingProgress() == 100.0f)
+    if (terrainGenerator_->getLoadingProgress() >= 100.0f)
     {
       terrainLoadingThread_.join();
       terrainGenerator_->createTextureFromImage();
@@ -78,17 +90,17 @@ bool Raygates::update()
       return true;
     }
 
-    std::cout << "NOT LOADED!" << std::endl;
-    window.renderLoadingScreen(terrainGenerator_->getLoadingProgress());
     hasTerrainFinishedGenerating_ = false;
-    return true;
+    return window.renderLoadingScreen(terrainGenerator_->getLoadingProgress());
   }
 
-  for (const auto &animal : animals_) {
-    std::ignore = animal->update();
+  for (const auto &animal : animals_)
+  {
+    std::ignore = animal->update(expectedDt);
   }
 
-  for (const auto &plant : plants_) {
+  for (const auto &plant : plants_)
+  {
     std::ignore = plant->update();
   }
 
@@ -98,20 +110,20 @@ bool Raygates::update()
 void Raygates::initSimulation()
 {
   Stats stats;
-  stats.speed = 0.2f;
-  stats.visibilityRadius = 15;
+  stats.speed = config_->get()["simulation"]["rabbit"]["speed"].get<float>();
+  stats.visibilityRadius = config_->get()["simulation"]["rabbit"]["visibilityRadius"].get<int>();
 
-  for (int i = 0; i < 70; i++)
+  for (int i = 0; i < config_->get()["simulation"]["rabbit"]["initialNumber"].get<int>(); i++)
   {
     Vector2 position = getRandomWalkablePosition(terrainGenerator_.get(), mapWidth_, mapHeight_);
-    const auto rabbit = std::make_shared<Rabbit>(position, *terrainGenerator_.get(), stats);
+    const auto rabbit = std::make_shared<Rabbit>(position,resourceMap_.at("rabbit"), *terrainGenerator_.get(), stats);
     animals_.emplace_back(rabbit);
   }
 
-  for (int i = 0; i < 100; i++)
+  for (int i = 0; i < config_->get()["simulation"]["herb"]["initialNumber"].get<int>(); i++)
   {
     Vector2 position = getRandomPositionOfType(terrainGenerator_.get(), TerrainType::GRASS ,mapWidth_, mapHeight_);
-    const auto plant = std::make_shared<Plant>(position, "../resources/textures/herb.png");
+    const auto plant = std::make_shared<Plant>(position, resourceMap_.at("herb"));
     plants_.emplace_back(plant);
   }
 }

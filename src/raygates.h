@@ -24,16 +24,25 @@ private:
 private:
   std::thread terrainLoadingThread_;
   Config* config_;
+  bool hasTerrainFinishedGenerating_ = false;
+
+private:
+  // Window
   int windowWidth_;
   int windowHeight_;
   int mapWidth_;
   int mapHeight_;
+  int targetFPS_ = 0;
   Window window;
+
+private:
+  // Entity maps
   std::unique_ptr<TerrainGenerator> terrainGenerator_;
   std::vector<std::shared_ptr<Animal>> animals_;
   std::vector<std::shared_ptr<Plant>> plants_;
 
-  bool hasTerrainFinishedGenerating_ = false;
+private:
+  std::unordered_map<std::string, std::shared_ptr<Texture2D>> resourceMap_;
 };
 
 }
