@@ -8,68 +8,46 @@
 #include <fstream>
 #include "spdlog/spdlog.h"
 #include "nlohmann/json.hpp"
-#include "backward/backward.hpp"
 
 #define CONFIG_FILE "config.json"
 #define CONFIG_PATH "../config/"
 
 #define LOG_LEVEL_KEY "logLevel"
 
-nlohmann::json j;
-
-namespace backward
-{
-
-backward::SignalHandling sh;
-
-} // namespace backward
-
-
 class Config
 {
 public:
-    static std::string getString(const std::string& key)
-    {
-        return j[key].get<std::string>();
-    }
+  explicit Config(const std::string &configPath);
 
-    static int getInt(const std::string& key)
-    {
-        return j[key].get<int>();
-    }
+  [[nodiscard]] const nlohmann::json &get() const noexcept
+  {
+    return j;
+  }
 
-    static bool getBool(const std::string& key)
-    {
-        return j[key].get<bool>();
-    }
-
-    static float getFloat(const std::string& key)
-    {
-        return j[key].get<float>();
-    }
+private:
+  nlohmann::json j;
 };
 
-void loadConfig()
+inline Config::Config(const std::string &configPath)
 {
-    std::string fullPath = CONFIG_PATH + std::string(CONFIG_FILE);
-    std::ifstream fileStream(fullPath);
-    
-    if (!fileStream.is_open()) 
-    {
-        spdlog::error("Could not open config file at {}", fullPath);
-    }
-    
-    try 
-    {
-        nlohmann::json file;
-        fileStream >> file;
-        j = file;
-    } 
-    catch (nlohmann::json::parse_error& e) 
-    {
-        spdlog::error("JSON parsing error: {}", e.what());
-        throw;
-    }
+  std::ifstream fileStream(configPath);
+
+  if (!fileStream.is_open())
+  {
+    spdlog::error("Could not open config file at {}", configPath);
+  }
+
+  try
+  {
+    nlohmann::json file;
+    fileStream >> file;
+    j = file;
+  }
+  catch (nlohmann::json::parse_error& e)
+  {
+    spdlog::error("JSON parsing error: {}", e.what());
+    throw;
+  }
 }
 
 enum class LogLevel
@@ -83,12 +61,12 @@ enum class LogLevel
     off
 };
 
-void setLogPattern()
+inline void setLogPattern()
 {
     spdlog::set_pattern("[%T.%e] %n: %^[%l]%$ %v");
 }
 
-LogLevel stringToLogLevel(const std::string& level)
+inline LogLevel stringToLogLevel(const std::string& level)
 {
     if (level == "trace")
         return LogLevel::trace;
@@ -107,7 +85,7 @@ LogLevel stringToLogLevel(const std::string& level)
     return LogLevel::info;
 }
 
-void setLogLevel(LogLevel level)
+inline void setLogLevel(LogLevel level)
 {
     switch (level)
     {

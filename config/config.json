@@ -1,5 +1,13 @@
 {
     "logLevel": "info",
-    "windowWidth": 1920,
-    "windowHeight": 1080
+    "window" :
+    {
+        "width": 1920,
+        "height": 1080
+    },
+    "map" :
+    {
+        "width": 2000,
+        "height": 2000
+    }
 }

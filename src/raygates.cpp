@@ -41,22 +41,22 @@ namespace {
   const Vector2 position {getRandomFloat(0, width), getRandomFloat(0, height)};
   if (terrain->getTerrainType(position) == type)
   {
-    std::cout << static_cast<int>(terrain->getTerrainType(position)) << std::endl;
     return position;
   }
 
-  return getRandomWalkablePosition(terrain, width, height);
+  return getRandomPositionOfType(terrain, type, width, height);
 }
-
-
-
 
 }
 
-Raygates::Raygates()
-  : window(1920, 1080, PROJECT_NAME)
+Raygates::Raygates(Config* config) : config_(config)
+, windowWidth_(config->get()["window"]["width"].get<int>())
+, windowHeight_(config->get()["window"]["height"].get<int>())
+, mapWidth_(config->get()["map"]["width"].get<int>())
+, mapHeight_(config->get()["map"]["height"].get<int>())
+  , window(windowWidth_, windowHeight_, PROJECT_NAME)
 {
-  terrainGenerator_ = std::make_unique<TerrainGenerator>(1920, 1080);
+  terrainGenerator_ = std::make_unique<TerrainGenerator>(mapWidth_, mapHeight_);
 
   Stats stats;
   stats.speed = 0.2f;
@@ -65,14 +65,14 @@ Raygates::Raygates()
 
   for (int i = 0; i < 70; i++)
   {
-    Vector2 position = getRandomWalkablePosition(terrainGenerator_.get(), 1920, 1080);
+    Vector2 position = getRandomWalkablePosition(terrainGenerator_.get(), mapWidth_, mapHeight_);
     const auto rabbit = std::make_shared<Rabbit>(position, *terrainGenerator_.get(), stats);
     animals_.emplace_back(rabbit);
   }
 
   for (int i = 0; i < 100; i++)
   {
-    Vector2 position = getRandomPositionOfType(terrainGenerator_.get(), TerrainType::GRASS ,1920, 1080);
+    Vector2 position = getRandomPositionOfType(terrainGenerator_.get(), TerrainType::GRASS ,mapWidth_, mapHeight_);
     const auto plant = std::make_shared<Plant>(position, "../resources/textures/herb.png");
     plants_.emplace_back(plant);
   }
