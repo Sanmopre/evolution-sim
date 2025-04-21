@@ -33,7 +33,7 @@ enum class State
 class Animal
 {
 public:
-  Animal(Coordinate position, std::shared_ptr<Texture2D> texture, const TerrainGenerator& terrainGenerator, const Stats& stats, std::unordered_map<Coordinate, std::vector<u32>>& coordinateMap);
+  Animal(u32 id, Coordinate position, std::shared_ptr<Texture2D> texture, const TerrainGenerator& terrainGenerator, const Stats& stats, std::unordered_map<Coordinate, std::vector<u32>>& coordinateMap);
   virtual ~Animal();
 
   [[nodiscard]] const Coordinate& getPosition() const noexcept;
@@ -46,12 +46,15 @@ public:
 
 private:
   void updatePosition(float dt);
+  void updateListOfInRadiusEntities();
 
 private:
+  const u32 id;
   std::unordered_map<Coordinate, std::vector<u32>>& coordinateMap_;
   const TerrainGenerator& terrainGenerator_;
   Coordinate position_;
   std::shared_ptr<Texture2D> texture_;
+  std::vector<u32> listOfInRadiusEntities_;
 
 private:
   Stats stats_;

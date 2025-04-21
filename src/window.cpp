@@ -156,7 +156,20 @@ void Window::drawPath(const Path &path) const noexcept
 
 void Window::drawUI() noexcept
 {
-  GuiButton({90,0, 90, 90}, "PLAY");
+  if (uiState_.simulationStop)
+  {
+     if (GuiButton({90,0, 90, 90}, "PLAY"))
+     {
+       uiState_.simulationStop = false;
+     }
+  }
+  else
+  {
+    if (GuiButton({90,0, 90, 90}, "PAUSE"))
+    {
+      uiState_.simulationStop = true;
+    }
+  }
   sliderPressed_ = static_cast<bool>(GuiSliderBar({180,50, 200, 20}, "", "", &uiState_.simulationSpeedSlider, 1.0f, 20.0f));
 }
 

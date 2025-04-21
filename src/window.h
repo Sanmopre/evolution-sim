@@ -17,6 +17,7 @@ namespace raygates
 struct UIState
 {
   bool windowShouldClose = false;
+  bool simulationStop = false;
   f32 simulationSpeedSlider = 1.0f;
 };
 

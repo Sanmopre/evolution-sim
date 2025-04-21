@@ -62,11 +62,11 @@ Raygates::Raygates(Config *config)
       coordinateMap_() {
 
   resourceMap_["rabbit"] = std::make_shared<Texture2D>(
-      LoadTexture("../resources/textures/rabbit.png"));
+      LoadTexture("../resources/textures/rabbit2.png"));
   resourceMap_["wolf"] = std::make_shared<Texture2D>(
       LoadTexture("../resources/textures/wolf.png"));
   resourceMap_["herb"] = std::make_shared<Texture2D>(
-      LoadTexture("../resources/textures/herb.png"));
+      LoadTexture("../resources/textures/bush.png"));
 
   terrainGenerator_ = std::make_unique<TerrainGenerator>(mapWidth_, mapHeight_);
   terrainLoadingThread_ =
@@ -99,9 +99,12 @@ bool Raygates::update()
     return window.renderLoadingScreen(terrainGenerator_->getLoadingProgress());
   }
 
-  for (u8 i = 0; i < static_cast<u8>(uiState_.simulationSpeedSlider); i++)
+  if (!uiState_.simulationStop)
   {
-    updateEntities();
+    for (u8 i = 0; i < static_cast<u8>(uiState_.simulationSpeedSlider); i++)
+    {
+      updateEntities();
+    }
   }
 
   uiState_ = window.render(animals_, plants_, terrainGenerator_.get());
@@ -120,10 +123,10 @@ void Raygates::initSimulation()
   {
     Coordinate position = getRandomWalkablePosition(terrainGenerator_.get(),
                                                  mapWidth_, mapHeight_);
-
-    const auto rabbit = std::make_shared<Rabbit>(
+    const auto id = generateId();
+    const auto rabbit = std::make_shared<Rabbit>(id,
     position, resourceMap_.at("rabbit"), *terrainGenerator_.get(), stats, coordinateMap_);
-    animals_.try_emplace(generateId(),rabbit);
+    animals_.try_emplace(id,rabbit);
   }
 
   for (u16 i = 0;
@@ -132,9 +135,9 @@ void Raygates::initSimulation()
   {
     Coordinate position = getRandomPositionOfType(
         terrainGenerator_.get(), TerrainType::GRASS, mapWidth_, mapHeight_);
-    const auto plant =
-        std::make_shared<Plant>(position, resourceMap_.at("herb"), coordinateMap_);
-    plants_.try_emplace(generateId(),plant);
+    const auto id = generateId();
+    const auto plant = std::make_shared<Plant>(id, position, resourceMap_.at("herb"), coordinateMap_);
+    plants_.try_emplace(id,plant);
   }
 }
 

@@ -24,13 +24,13 @@ namespace
 
 }
 
-Animal::Animal(Coordinate position, std::shared_ptr<Texture2D> texture,
+Animal::Animal(u32 id, Coordinate position, std::shared_ptr<Texture2D> texture,
                const TerrainGenerator &terrainGenerator, const Stats &stats,
                std::unordered_map<Coordinate, std::vector<u32>> &coordinateMap)
-    : coordinateMap_(coordinateMap), terrainGenerator_(terrainGenerator),
+    : id(id) ,coordinateMap_(coordinateMap), terrainGenerator_(terrainGenerator),
       position_(position), texture_(texture), stats_(stats)
 {
-  coordinateMap_[position_].emplace_back(2);
+  coordinateMap_[position_].emplace_back(id);
 }
 
 Animal::~Animal()
@@ -38,7 +38,7 @@ Animal::~Animal()
   if (coordinateMap_.find(position_) != coordinateMap_.end())
   {
     auto& vector = coordinateMap_.at(position_);
-    vector.erase(std::remove(vector.begin(), vector.end(), 2), vector.end());
+    vector.erase(std::remove(vector.begin(), vector.end(), id), vector.end());
     if (vector.empty())
     {
       coordinateMap_.erase(position_);
@@ -46,16 +46,19 @@ Animal::~Animal()
   }
 }
 
-const Coordinate &Animal::getPosition() const noexcept {
+const Coordinate &Animal::getPosition() const noexcept
+{
   return position_;
 }
 
-const Texture2D &Animal::getTexture() const noexcept {
+const Texture2D &Animal::getTexture() const noexcept
+{
   return *texture_;
 }
 
 void Animal::setNextRelativePosition(
-    const Coordinate &nextRelativePosition) noexcept {
+    const Coordinate &nextRelativePosition) noexcept
+{
   position_ = Coordinate{position_.x + nextRelativePosition.x,
                       position_.y + nextRelativePosition.y};
 }
@@ -76,11 +79,10 @@ void Animal::setNextDestinationPosition(
 bool Animal::update(float dt)
 {
   // update coordinate map pre-move
-
   if (coordinateMap_.find(position_) != coordinateMap_.end())
   {
     auto& vector = coordinateMap_.at(position_);
-    vector.erase(std::remove(vector.begin(), vector.end(), 2), vector.end());
+    vector.erase(std::remove(vector.begin(), vector.end(), id), vector.end());
     if (vector.empty())
     {
       coordinateMap_.erase(position_);
@@ -92,6 +94,7 @@ bool Animal::update(float dt)
   {
   case State::IDLE:
      setNextDestinationPosition(getRandomWalkablePosition(terrainGenerator_, terrainGenerator_.getTilesInRadius(position_, stats_.visibilityRadius)));
+     updateListOfInRadiusEntities();
     break;
   case State::RUNNING:
     updatePosition(dt);
@@ -110,7 +113,7 @@ bool Animal::update(float dt)
   }
 
   // update coordinate map post_move
-  coordinateMap_[position_].emplace_back(2);
+  coordinateMap_[position_].emplace_back(id);
 
   return true;
 }
@@ -126,12 +129,9 @@ void Animal::updatePosition(float dt)
   tilesToMoveThisFrame_ += stats_.speed * dt;
   const auto tilesToMove = static_cast<int>(tilesToMoveThisFrame_);
 
-  if (tilesToMove > 0)
-  {
+  if (tilesToMove > 0) {
     tilesToMoveThisFrame_ -= static_cast<float>(tilesToMove);
-  }
-  else
-  {
+  } else {
     return;
   }
 
@@ -147,5 +147,25 @@ void Animal::updatePosition(float dt)
   else
   {
     position_ = currentPath_[currentTileIndex_ - 1];
+  }
+}
+
+void Animal::updateListOfInRadiusEntities()
+{
+  listOfInRadiusEntities_.clear();
+  const auto& visibleTiles = terrainGenerator_.getTilesInRadius(position_, stats_.visibilityRadius);
+
+  for (const auto& tile : visibleTiles)
+  {
+    if ( terrainGenerator_.isWalkable(tile))
+    {
+      if (coordinateMap_.find(tile) != coordinateMap_.end())
+      {
+        for (const auto& entityId : coordinateMap_.at(tile))
+        {
+          listOfInRadiusEntities_.emplace_back(entityId);
+        }
+      }
+    }
   }
 }
