@@ -16,19 +16,12 @@ namespace raygates
 {
 
 
-namespace {
-
-[[nodiscard]] float getRandomFloat(float min = -1.0f, float max = 1.0f)
+namespace
 {
-  static std::random_device rd;
-  static std::mt19937 gen(rd());
-  std::uniform_real_distribution<float> dist(min, max);
-  return std::floor(dist(gen));
-}
 
-[[nodiscard]] Vector2 getRandomWalkablePosition(TerrainGenerator* terrain, int width, int height)
+[[nodiscard]] Coordinate getRandomWalkablePosition(TerrainGenerator* terrain, u16 width, u16 height)
 {
-  if (const Vector2 position {getRandomFloat(0, width), getRandomFloat(0, height)}; terrain->isWalkable(position))
+  if (const Coordinate position {GetRandomValue(0, width), GetRandomValue(0, height)}; terrain->isWalkable(position))
   {
     return position;
   }
@@ -36,10 +29,9 @@ namespace {
   return getRandomWalkablePosition(terrain, width, height);
 }
 
-[[nodiscard]] Vector2 getRandomPositionOfType(TerrainGenerator* terrain, TerrainType type,  int width, int height)
+[[nodiscard]] Coordinate getRandomPositionOfType(TerrainGenerator* terrain, TerrainType type,  u16 width, u16 height)
 {
-  const Vector2 position {getRandomFloat(0, width), getRandomFloat(0, height)};
-  if (terrain->getTerrainType(position) == type)
+  if (  const Coordinate position {GetRandomValue(0, width - 1), GetRandomValue(0, height - 1)}; terrain->getTerrainType(position) == type)
   {
     return position;
   }
@@ -50,13 +42,12 @@ namespace {
 }
 
 Raygates::Raygates(Config* config) : config_(config)
-, windowWidth_(config->get()["window"]["width"].get<int>())
-, windowHeight_(config->get()["window"]["height"].get<int>())
-, mapWidth_(config->get()["map"]["width"].get<int>())
-, mapHeight_(config->get()["map"]["height"].get<int>())
-, targetFPS_(config->get()["targetFPS"].get<int>())
-, expectedDeltaTime_(1.0f / static_cast<float>(targetFPS_))
-, simulationSpeed_(config_->get()["simulation"]["speed"].get<int>())
+, windowWidth_(config->get()["window"]["width"].get<u16>())
+, windowHeight_(config->get()["window"]["height"].get<u16>())
+, mapWidth_(config->get()["map"]["width"].get<u16>())
+, mapHeight_(config->get()["map"]["height"].get<u16>())
+, targetFPS_(config->get()["targetFPS"].get<u16>())
+, expectedDeltaTime_(1.0f / static_cast<f32>(targetFPS_))
   , window(windowWidth_, windowHeight_, PROJECT_NAME, targetFPS_)
 {
 
@@ -94,33 +85,36 @@ bool Raygates::update()
     return window.renderLoadingScreen(terrainGenerator_->getLoadingProgress());
   }
 
-  for (int i = 0; i < simulationSpeed_; i++)
+  for (u8 i = 0; i < static_cast<u8>(uiState_.simulationSpeedSlider); i++)
   {
     updateEntities();
   }
-  return window.render(animals_, plants_, terrainGenerator_.get());
+
+  uiState_ = window.render(animals_, plants_, terrainGenerator_.get());
+
+  return !uiState_.windowShouldClose;
 }
 
-void Raygates::initSimulation() {
+void Raygates::initSimulation()
+{
   Stats stats;
-  stats.speed = config_->get()["simulation"]["rabbit"]["speed"].get<float>();
+  stats.speed = config_->get()["simulation"]["rabbit"]["speed"].get<f32>();
   stats.visibilityRadius =
-      config_->get()["simulation"]["rabbit"]["visibilityRadius"].get<int>();
+      config_->get()["simulation"]["rabbit"]["visibilityRadius"].get<u16>();
 
-  for (int i = 0;
-       i < config_->get()["simulation"]["rabbit"]["initialNumber"].get<int>();
-       i++) {
-    Vector2 position = getRandomWalkablePosition(terrainGenerator_.get(),
+  for (u16 i = 0; i < config_->get()["simulation"]["rabbit"]["initialNumber"].get<u16>(); i++)
+  {
+    Coordinate position = getRandomWalkablePosition(terrainGenerator_.get(),
                                                  mapWidth_, mapHeight_);
     const auto rabbit = std::make_shared<Rabbit>(
         position, resourceMap_.at("rabbit"), *terrainGenerator_.get(), stats);
     animals_.emplace_back(rabbit);
   }
 
-  for (int i = 0;
-       i < config_->get()["simulation"]["herb"]["initialNumber"].get<int>();
+  for (u16 i = 0;
+       i < config_->get()["simulation"]["herb"]["initialNumber"].get<u16>();
        i++) {
-    Vector2 position = getRandomPositionOfType(
+    Coordinate position = getRandomPositionOfType(
         terrainGenerator_.get(), TerrainType::GRASS, mapWidth_, mapHeight_);
     const auto plant =
         std::make_shared<Plant>(position, resourceMap_.at("herb"));

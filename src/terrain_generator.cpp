@@ -13,16 +13,16 @@
 
 namespace {
 
-float getRandomFloat(float min = -6.0f, float max = 0.0f) {
+f32 getRandomf32(f32 min = -6.0f, f32 max = 0.0f) {
   static std::random_device rd;
   static std::mt19937 gen(rd()); // Mersenne Twister engine
-  std::uniform_real_distribution<float> dist(min, max);
+  std::uniform_real_distribution<f32> dist(min, max);
   return dist(gen);
 }
 
 }
 
-TerrainGenerator::TerrainGenerator(int width, int height)
+TerrainGenerator::TerrainGenerator(u16 width, u16 height)
   : width_(width), height_(height)
 {
 
@@ -59,14 +59,14 @@ void TerrainGenerator::generate() {
   // Create pixel data in RGBA format
   unsigned char *pixels = (unsigned char *)malloc(width_ * height_ * 4);
 
-  for (int y = 0; y < height_; y++)
+  for (i64 y = 0; y < height_; y++)
   {
     std::vector<TerrainType> terrainTypeLine;
     terrainTypeLine.reserve(width_);
 
-    for (int x = 0; x < width_; x++)
+    for (i64 x = 0; x < width_; x++)
     {
-      const auto noiseValue = (noise.GetNoise((float)x, (float)y) + 1.0) / 2.0;
+      const auto noiseValue = (noise.GetNoise((f32)x, (f32)y) + 1.0) / 2.0;
       Color tileColor = RAYWHITE;
 
       for (const auto &[key, value] : rangeMap_) {
@@ -79,11 +79,11 @@ void TerrainGenerator::generate() {
 
       const auto i = x + (y * width_);
       pixels[(i * 4) + 0] = tileColor.r;
-      pixels[(i * 4) + 1] = tileColor.g + static_cast<int>(getRandomFloat());
-      pixels[(i * 4) + 2] = tileColor.b + static_cast<int>(getRandomFloat());
-      pixels[(i * 4) + 3] = tileColor.a + static_cast<int>(getRandomFloat());
+      pixels[(i * 4) + 1] = tileColor.g + static_cast<i64>(getRandomf32());
+      pixels[(i * 4) + 2] = tileColor.b + static_cast<i64>(getRandomf32());
+      pixels[(i * 4) + 3] = tileColor.a + static_cast<i64>(getRandomf32());
 
-      loadingProgress_ = static_cast<float>(i) / static_cast<float>(width_ * height_) * 100.0;
+      loadingProgress_ = static_cast<f32>(i) / static_cast<f32>(width_ * height_) * 100.0;
     }
     terrainType_.emplace_back(terrainTypeLine);
   }
@@ -96,12 +96,13 @@ void TerrainGenerator::generate() {
                        .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
 }
 
-void TerrainGenerator::createTextureFromImage() {
+void TerrainGenerator::createTextureFromImage()
+{
   generatedTerrainTexture_ = LoadTextureFromImage(image_);
   UnloadImage(image_);
 }
 
-float TerrainGenerator::getLoadingProgress() const noexcept
+f32 TerrainGenerator::getLoadingProgress() const noexcept
 {
   return loadingProgress_;
 }
@@ -111,12 +112,12 @@ const Texture2D &TerrainGenerator::getTerrainTexture() const noexcept
   return generatedTerrainTexture_;
 }
 
-TerrainType TerrainGenerator::getTerrainType(Vector2 point) const noexcept
+TerrainType TerrainGenerator::getTerrainType(Coordinate point) const noexcept
 {
-  return terrainType_[static_cast<int>(point.y)][static_cast<int>(point.x)];
+  return terrainType_[point.y][point.x];
 }
 
-bool TerrainGenerator::isWalkable(Vector2 point) const {
+bool TerrainGenerator::isWalkable(Coordinate point) const {
   if (point.y < 0 || point.y >= terrainType_.size() || point.x < 0 ||
       point.x >= terrainType_[0].size())
     return false;
@@ -125,17 +126,17 @@ bool TerrainGenerator::isWalkable(Vector2 point) const {
   return !(t == TerrainType::WATER || t == TerrainType::DEEP_WATER);
 }
 
-int TerrainGenerator::heuristic(Vector2 pointA, Vector2 pointB) const noexcept {
+i64 TerrainGenerator::heuristic(Coordinate pointA, Coordinate pointB) const noexcept {
   return std::abs(pointA.x - pointB.x) + std::abs(pointA.y - pointB.y);
 }
 
 
 
-Path TerrainGenerator::reconstructPath(std::unordered_map<int, Vector2> &cameFrom,
-                                  Vector2 end, int width) const
+Path TerrainGenerator::reconstructPath(std::unordered_map<i64, Coordinate> &cameFrom,
+                                  Coordinate end, u16 width) const
 {
   Path path;
-  int currentKey = end.y * width + end.x;
+  i64 currentKey = end.y * width + end.x;
 
   while (cameFrom.find(currentKey) != cameFrom.end()) {
     auto point = cameFrom[currentKey];
@@ -149,25 +150,25 @@ Path TerrainGenerator::reconstructPath(std::unordered_map<int, Vector2> &cameFro
 
 
 std::optional<Path>
-TerrainGenerator::getPathToDestination(Vector2 origin,
-                                       Vector2 destination) const {
+TerrainGenerator::getPathToDestination(Coordinate origin,
+                                       Coordinate destination) const {
   if (!isWalkable(destination))
   {
     return std::nullopt;
   }
 
-  int width = terrainType_[0].size();
+  i64 width = terrainType_[0].size();
 
   std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
-  std::unordered_map<int, int> gScore;
-  std::unordered_map<int, Vector2> cameFrom;
+  std::unordered_map<i64, i64> gScore;
+  std::unordered_map<i64, Coordinate> cameFrom;
 
-  auto key = [&](int x, int y) { return y * width + x; };
+  auto key = [&](i64 x, i64 y) { return y * width + x; };
 
   openSet.push({origin.x, origin.y, 0, heuristic(origin, destination)});
   gScore[key(origin.x, origin.y)] = 0;
 
-  const int dirs[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}; // 4-way movement
+  const i64 dirs[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}; // 4-way movement
 
   while (!openSet.empty()) {
     Node current = openSet.top();
@@ -177,20 +178,20 @@ TerrainGenerator::getPathToDestination(Vector2 origin,
       return reconstructPath(cameFrom, destination, width);
 
     for (auto &dir : dirs) {
-      Vector2 n = current.point;
+      Coordinate n = current.point;
       n.x += dir[0];
       n.y += dir[1];
 
       if (!isWalkable(n))
         continue;
 
-      int tentative_g = gScore[key(current.point.x, current.point.y)] + 1;
+      i64 tentative_g = gScore[key(current.point.x, current.point.y)] + 1;
 
       if (gScore.find(key(n.x, n.y)) == gScore.end() ||
           tentative_g < gScore[key(n.x, n.y)]) {
         cameFrom[key(n.x, n.y)] = {current.point.x, current.point.y};
         gScore[key(n.x, n.y)] = tentative_g;
-        int f = tentative_g + heuristic(n, destination);
+        i64 f = tentative_g + heuristic(n, destination);
         openSet.push({n.x, n.y, tentative_g, f});
       }
     }
@@ -199,24 +200,24 @@ TerrainGenerator::getPathToDestination(Vector2 origin,
   return {}; // no path found
 }
 
-std::vector<Vector2> TerrainGenerator::getTilesInRadius(Vector2 point,
-                                                        int radius) const
+std::vector<Coordinate> TerrainGenerator::getTilesInRadius(Coordinate point,
+                                                        u16 radius) const
 {
-  std::vector<Vector2> result;
+  std::vector<Coordinate> result;
 
-  int minY = std::max(0, static_cast<int>(point.y - radius));
-  int maxY = std::min((int)terrainType_.size() - 1, static_cast<int>(point.y + radius));
-  int minX = std::max(0, static_cast<int>(point.x - radius));
-  int maxX = std::min((int)terrainType_[0].size() - 1, static_cast<int>(point.x + radius));
+  i64 minY = std::max(0, static_cast<i32>(point.y - radius));
+  i64 maxY = std::min(static_cast<i64>(terrainType_.size() - 1), (point.y + radius));
+  i64 minX = std::max(0, static_cast<i32>(point.x - radius));
+  i64 maxX = std::min(static_cast<i64>(terrainType_[0].size() - 1), (point.x + radius));
 
-  float radiusSq = radius * radius;
+  f32 radiusSq = radius * radius;
 
-  for (int y = minY; y <= maxY; ++y) {
-    for (int x = minX; x <= maxX; ++x) {
-      float dx = point.x - x;
-      float dy = point.y - y;
+  for (i64 y = minY; y <= maxY; ++y) {
+    for (i64 x = minX; x <= maxX; ++x) {
+      f32 dx = point.x - x;
+      f32 dy = point.y - y;
       if (dx * dx + dy * dy <= radiusSq) {
-        result.emplace_back(Vector2{x, y});
+        result.emplace_back(Coordinate{x, y});
       }
     }
   }

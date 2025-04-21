@@ -1,11 +1,11 @@
 #include "plant.h"
 
-Plant::Plant(Vector2 position, std::shared_ptr<Texture2D> texture)
+Plant::Plant(Coordinate position, std::shared_ptr<Texture2D> texture)
   : position_(position), texture_(texture)
 {
 }
 
-const Vector2 &Plant::getPosition() const noexcept
+const Coordinate &Plant::getPosition() const noexcept
 {
   return position_;
 }

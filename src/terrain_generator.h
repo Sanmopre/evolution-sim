@@ -4,6 +4,8 @@
 #include "raylib.h"
 
 // std
+#include "config.h"
+
 #include <atomic>
 #include <cmath>
 #include <limits>
@@ -26,27 +28,27 @@ enum class TerrainType
 
 struct MinMaxTerrain
 {
-  float min;
-  float max;
+  f32 min;
+  f32 max;
 };
 
 
 struct Node
 {
-  Vector2 point;
-  int g, f;
+  Coordinate point;
+  i64 g, f;
   bool operator>(const Node& other) const
   {
     return f > other.f;
   }
 };
 
-using Path = std::vector<Vector2>;
+using Path = std::vector<Coordinate>;
 
 class TerrainGenerator
 {
 public:
-  TerrainGenerator(int width, int height);
+  TerrainGenerator(u16 width, u16 height);
   void generate();
   void createTextureFromImage();
   ~TerrainGenerator() = default;
@@ -56,25 +58,25 @@ public:
 
 public:
   [[nodiscard]] const Texture2D& getTerrainTexture() const noexcept;
-  [[nodiscard]] TerrainType getTerrainType(Vector2 point) const noexcept;
-  [[nodiscard]] bool isWalkable(Vector2 point) const;
+  [[nodiscard]] TerrainType getTerrainType(Coordinate point) const noexcept;
+  [[nodiscard]] bool isWalkable(Coordinate point) const;
 
 public:
-  [[nodiscard]] std::optional<Path> getPathToDestination(Vector2 origin, Vector2 destination) const;
-  [[nodiscard]] std::vector<Vector2> getTilesInRadius(Vector2 point, int radius) const;
+  [[nodiscard]] std::optional<Path> getPathToDestination(Coordinate origin, Coordinate destination) const;
+  [[nodiscard]] std::vector<Coordinate> getTilesInRadius(Coordinate point, u16 radius) const;
 
 private:
-  [[nodiscard]] int heuristic(Vector2 pointA, Vector2 pointB) const noexcept;
-  [[nodiscard]] Path reconstructPath(std::unordered_map<int, Vector2>& cameFrom,
-    Vector2 end, int width) const;
+  [[nodiscard]] i64 heuristic(Coordinate pointA, Coordinate pointB) const noexcept;
+  [[nodiscard]] Path reconstructPath(std::unordered_map<i64, Coordinate>& cameFrom,
+    Coordinate end, u16 width) const;
 
 private:
-  int width_;
-  int height_;
+  u16 width_;
+  u16 height_;
   Image image_;
   Texture2D generatedTerrainTexture_;
   std::map<TerrainType, Color> colorMap_;
   std::map<TerrainType, MinMaxTerrain> rangeMap_;
   std::vector<std::vector<TerrainType>> terrainType_;
-  std::atomic<float> loadingProgress_;
+  std::atomic<f32> loadingProgress_;
 };

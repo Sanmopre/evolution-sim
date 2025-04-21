@@ -12,7 +12,7 @@
 namespace
 {
 
-[[nodiscard]] Vector2 getRandomWalkablePosition(const TerrainGenerator& terrain, const std::vector<Vector2>& positions)
+[[nodiscard]] Coordinate getRandomWalkablePosition(const TerrainGenerator& terrain, const std::vector<Coordinate>& positions)
 {
   if (  const auto position =  positions.at(GetRandomValue(0, positions.size() - 1)); terrain.isWalkable(position))
   {
@@ -24,7 +24,7 @@ namespace
 
 }
 
-Animal::Animal(Vector2 position, std::shared_ptr<Texture2D> texture, const TerrainGenerator& terrainGenerator, const Stats& stats)
+Animal::Animal(Coordinate position, std::shared_ptr<Texture2D> texture, const TerrainGenerator& terrainGenerator, const Stats& stats)
   :
     terrainGenerator_(terrainGenerator)
   , position_(position)
@@ -34,7 +34,7 @@ Animal::Animal(Vector2 position, std::shared_ptr<Texture2D> texture, const Terra
 
 }
 
-const Vector2 &Animal::getPosition() const noexcept {
+const Coordinate &Animal::getPosition() const noexcept {
   return position_;
 }
 
@@ -43,13 +43,13 @@ const Texture2D &Animal::getTexture() const noexcept {
 }
 
 void Animal::setNextRelativePosition(
-    const Vector2 &nextRelativePosition) noexcept {
-  position_ = Vector2{position_.x + nextRelativePosition.x,
+    const Coordinate &nextRelativePosition) noexcept {
+  position_ = Coordinate{position_.x + nextRelativePosition.x,
                       position_.y + nextRelativePosition.y};
 }
 
 void Animal::setNextDestinationPosition(
-    const Vector2 &nextDestinationPosition) noexcept
+    const Coordinate &nextDestinationPosition) noexcept
 {
   const auto possiblePath = terrainGenerator_.getPathToDestination(
       position_, nextDestinationPosition);

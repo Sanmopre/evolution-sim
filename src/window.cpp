@@ -36,27 +36,31 @@ Window::~Window() {
   CloseWindow();
 }
 
-bool Window::render(const std::vector<std::shared_ptr<Animal>> &animals,
+const UIState& Window::render(const std::vector<std::shared_ptr<Animal>> &animals,
                     const std::vector<std::shared_ptr<Plant>> &plants,
-                    TerrainGenerator *terrain) {
-  if (WindowShouldClose()) {
-    return false;
+                    TerrainGenerator *terrain)
+{
+  if (WindowShouldClose())
+  {
+    uiState_.windowShouldClose = true;
+    return uiState_;
   }
 
-  if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+  if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !sliderPressed_)
+  {
     Vector2 delta = GetMouseDelta();
     delta = Vector2Scale(delta, -1.0f / camera_.zoom);
     camera_.target = Vector2Add(camera_.target, delta);
   }
 
-  if (float wheel = GetMouseWheelMove(); wheel != 0)
+  if (f32 wheel = GetMouseWheelMove(); wheel != 0)
   {
     Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera_);
 
     camera_.offset = GetMousePosition();
     camera_.target = mouseWorldPos;
 
-    float scale = 0.2f * wheel;
+    f32 scale = 0.2f * wheel;
     camera_.zoom = Clamp(expf(logf(camera_.zoom) + scale), 0.125f, 64.0f);
   }
 
@@ -66,41 +70,43 @@ bool Window::render(const std::vector<std::shared_ptr<Animal>> &animals,
   BeginMode2D(camera_);
   DrawTexture(terrain->getTerrainTexture(), 0, 0, WHITE);
 
-  for (const auto &animal : animals) {
+  for (const auto &animal : animals)
+  {
     const auto animalPosition = animal->getPosition();
 
     // Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin,
-    // float rotation, Color tint
-    Rectangle source = {0, 0, static_cast<float>(animal->getTexture().width),
-                        static_cast<float>(animal->getTexture().height)};
+    // f32 rotation, Color tint
+    Rectangle source = {0, 0, static_cast<f32>(animal->getTexture().width),
+                        static_cast<f32>(animal->getTexture().height)};
     Rectangle destination = {
-        animalPosition.x, animalPosition.y,
-        (static_cast<float>(animal->getTexture().width) / 3.0f) / camera_.zoom,
-        (static_cast<float>(animal->getTexture().height) / 3.0f) /
+         static_cast<f32>(animalPosition.x), static_cast<f32>(animalPosition.y),
+        (static_cast<f32>(animal->getTexture().width) / 3.0f) / camera_.zoom,
+        (static_cast<f32>(animal->getTexture().height) / 3.0f) /
             camera_.zoom};
-    Vector2 origin = {static_cast<float>(animal->getTexture().width) / 2.0f /
+    Vector2 origin = {static_cast<f32>(animal->getTexture().width) / 2.0f /
                           3.0f / camera_.zoom,
-                      static_cast<float>(animal->getTexture().height) / 2.0f /
+                      static_cast<f32>(animal->getTexture().height) / 2.0f /
                           3.0f / camera_.zoom};
 
     DrawTexturePro(animal->getTexture(), source, destination, origin, 0.0f,
                    WHITE);
   }
 
-  for (const auto &plant : plants) {
+  for (const auto &plant : plants)
+  {
     const auto plantPosition = plant->getPosition();
 
     // Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin,
-    // float rotation, Color tint
-    Rectangle source = {0, 0, static_cast<float>(plant->getTexture().width),
-                        static_cast<float>(plant->getTexture().height)};
+    // f32 rotation, Color tint
+    Rectangle source = {0, 0, static_cast<f32>(plant->getTexture().width),
+                        static_cast<f32>(plant->getTexture().height)};
     Rectangle destination = {
-        plantPosition.x, plantPosition.y,
-        (static_cast<float>(plant->getTexture().width) / 3.0f) / camera_.zoom,
-        (static_cast<float>(plant->getTexture().height) / 3.0f) / camera_.zoom};
-    Vector2 origin = {static_cast<float>(plant->getTexture().width) / 2.0f /
+        static_cast<f32>(plantPosition.x), static_cast<f32>(plantPosition.y),
+        (static_cast<f32>(plant->getTexture().width) / 3.0f) / camera_.zoom,
+        (static_cast<f32>(plant->getTexture().height) / 3.0f) / camera_.zoom};
+    Vector2 origin = {static_cast<f32>(plant->getTexture().width) / 2.0f /
                           3.0f / camera_.zoom,
-                      static_cast<float>(plant->getTexture().height) / 2.0f /
+                      static_cast<f32>(plant->getTexture().height) / 2.0f /
                           3.0f / camera_.zoom};
 
     DrawTexturePro(plant->getTexture(), source, destination, origin, 0.0f,
@@ -108,12 +114,13 @@ bool Window::render(const std::vector<std::shared_ptr<Animal>> &animals,
   }
 
   EndMode2D();
+  drawUI();
   EndDrawing();
 
-  return true;
+  return uiState_;
 }
 
-bool Window::renderLoadingScreen(float value) const noexcept
+bool Window::renderLoadingScreen(f32 value) const noexcept
 {
   if (WindowShouldClose())
   {
@@ -134,12 +141,18 @@ bool Window::renderLoadingScreen(float value) const noexcept
   return true;
 }
 
-void Window::drawPath(const Path& path) const noexcept
+void Window::drawPath(const Path &path) const noexcept
 {
-  for (const auto &vertex : path)
+  for (const auto &[x, y] : path)
   {
-    DrawPixel(vertex.x, vertex.y, WHITE);
+    DrawPixel(x, y, WHITE);
   }
+}
+
+void Window::drawUI() noexcept
+{
+  GuiButton({90,0, 90, 90}, "PLAY");
+  sliderPressed_ = static_cast<bool>(GuiSliderBar({180,50, 200, 20}, "", "", &uiState_.simulationSpeedSlider, 1.0f, 20.0f));
 }
 
 } // raygates

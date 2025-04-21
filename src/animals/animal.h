@@ -33,13 +33,13 @@ enum class State
 class Animal
 {
 public:
-  Animal(Vector2 position, std::shared_ptr<Texture2D> texture, const TerrainGenerator& terrainGenerator, const Stats& stats);
+  Animal(Coordinate position, std::shared_ptr<Texture2D> texture, const TerrainGenerator& terrainGenerator, const Stats& stats);
 
-  [[nodiscard]] const Vector2& getPosition() const noexcept;
+  [[nodiscard]] const Coordinate& getPosition() const noexcept;
   [[nodiscard]] const Texture2D& getTexture() const noexcept;
 
-  void setNextRelativePosition(const Vector2& nextRelativePosition) noexcept;
-  void setNextDestinationPosition(const Vector2& nextDestinationPosition) noexcept;
+  void setNextRelativePosition(const Coordinate& nextRelativePosition) noexcept;
+  void setNextDestinationPosition(const Coordinate& nextDestinationPosition) noexcept;
 
   [[nodiscard]] bool update(float dt);
 
@@ -48,7 +48,7 @@ private:
 
 private:
   const TerrainGenerator& terrainGenerator_;
-  Vector2 position_;
+  Coordinate position_;
   std::shared_ptr<Texture2D> texture_;
 
 private:

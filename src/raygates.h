@@ -29,14 +29,14 @@ private:
 
 private:
   // Window
-  int windowWidth_;
-  int windowHeight_;
-  int mapWidth_;
-  int mapHeight_;
-  int targetFPS_ = 0;
-  float expectedDeltaTime_;
-  int simulationSpeed_;
+  u16 windowWidth_;
+  u16 windowHeight_;
+  u16 mapWidth_;
+  u16 mapHeight_;
+  u16 targetFPS_ = 0;
+  f32 expectedDeltaTime_;
   Window window;
+  UIState uiState_;
 
 private:
   // Entity maps
