@@ -41,11 +41,12 @@ private:
 private:
   // Entity maps
   std::unique_ptr<TerrainGenerator> terrainGenerator_;
-  std::vector<std::shared_ptr<Animal>> animals_;
-  std::vector<std::shared_ptr<Plant>> plants_;
+  std::map<u32, std::shared_ptr<Animal>> animals_;
+  std::map<u32, std::shared_ptr<Plant>> plants_;
 
 private:
   std::unordered_map<std::string, std::shared_ptr<Texture2D>> resourceMap_;
+  std::unordered_map<Coordinate, std::vector<u32>> coordinateMap_;
 };
 
 }

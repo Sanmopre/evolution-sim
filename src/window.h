@@ -25,8 +25,7 @@ class Window
 public:
   Window(int width, int height, const std::string& title, int targetFps);
   ~Window();
-
-  [[nodiscard]] const UIState& render(const std::vector<std::shared_ptr<Animal>>& animals, const std::vector<std::shared_ptr<Plant>>& plants, TerrainGenerator* terrain);
+  [[nodiscard]] const UIState& render(const std::map<u32, std::shared_ptr<Animal>>& animals, const std::map<u32, std::shared_ptr<Plant>>& plants, TerrainGenerator* terrain);
   [[nodiscard]] bool renderLoadingScreen(float value) const noexcept;
 private:
   void drawPath(const Path& path)const noexcept;
@@ -36,6 +35,7 @@ private:
   bool showMessageBox = false;
   float currentZoomValue_ = 1.0f;
   Camera2D camera_;
+  Shader shader_;
 
 private:
   int width_;

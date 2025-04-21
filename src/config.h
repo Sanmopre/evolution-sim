@@ -8,6 +8,7 @@
 
 // std
 #include <fstream>
+#include <functional>
 
 
 #include "spdlog/spdlog.h"
@@ -35,7 +36,27 @@ struct Coordinate
 {
   i64 x = 0;
   i64 y = 0;
+
+  // Required for std::unordered_map key comparison
+  bool operator==(const Coordinate& other) const noexcept {
+    return x == other.x && y == other.y;
+  }
+
 };
+
+
+namespace std
+{
+template <>
+struct hash<Coordinate> {
+  std::size_t operator()(const Coordinate& coord) const noexcept
+  {
+    std::size_t h1 = std::hash<i64>{}(coord.x);
+    std::size_t h2 = std::hash<i64>{}(coord.y);
+    return h1 ^ (h2 << 1);
+  }
+};
+}
 
 class Config
 {

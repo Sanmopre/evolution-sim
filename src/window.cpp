@@ -30,14 +30,17 @@ Window::Window(int width, int height, const std::string &title, int targetFps)
   camera_.target = Vector2{0, 0};
   camera_.zoom = 1.0f;
   camera_.rotation = 0.0f;
+
+  shader_ = LoadShader("../resources/shaders/vertex.glsl", "../resources/shaders/fragment.glsl");
 }
 
-Window::~Window() {
+Window::~Window()
+{
+  UnloadShader(shader_);
   CloseWindow();
 }
 
-const UIState& Window::render(const std::vector<std::shared_ptr<Animal>> &animals,
-                    const std::vector<std::shared_ptr<Plant>> &plants,
+const UIState& Window::render(const std::map<u32, std::shared_ptr<Animal>>& animals, const std::map<u32, std::shared_ptr<Plant>>& plants,
                     TerrainGenerator *terrain)
 {
   if (WindowShouldClose())
@@ -69,8 +72,10 @@ const UIState& Window::render(const std::vector<std::shared_ptr<Animal>> &animal
 
   BeginMode2D(camera_);
   DrawTexture(terrain->getTerrainTexture(), 0, 0, WHITE);
+  BeginShaderMode(shader_);
+  EndShaderMode();
 
-  for (const auto &animal : animals)
+  for (const auto &[key, animal] : animals)
   {
     const auto animalPosition = animal->getPosition();
 
@@ -92,7 +97,7 @@ const UIState& Window::render(const std::vector<std::shared_ptr<Animal>> &animal
                    WHITE);
   }
 
-  for (const auto &plant : plants)
+  for (const auto &[key, plant] : plants)
   {
     const auto plantPosition = plant->getPosition();
 

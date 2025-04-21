@@ -24,14 +24,26 @@ namespace
 
 }
 
-Animal::Animal(Coordinate position, std::shared_ptr<Texture2D> texture, const TerrainGenerator& terrainGenerator, const Stats& stats)
-  :
-    terrainGenerator_(terrainGenerator)
-  , position_(position)
-  , texture_(texture)
-  , stats_(stats)
+Animal::Animal(Coordinate position, std::shared_ptr<Texture2D> texture,
+               const TerrainGenerator &terrainGenerator, const Stats &stats,
+               std::unordered_map<Coordinate, std::vector<u32>> &coordinateMap)
+    : coordinateMap_(coordinateMap), terrainGenerator_(terrainGenerator),
+      position_(position), texture_(texture), stats_(stats)
 {
+  coordinateMap_[position_].emplace_back(2);
+}
 
+Animal::~Animal()
+{
+  if (coordinateMap_.find(position_) != coordinateMap_.end())
+  {
+    auto& vector = coordinateMap_.at(position_);
+    vector.erase(std::remove(vector.begin(), vector.end(), 2), vector.end());
+    if (vector.empty())
+    {
+      coordinateMap_.erase(position_);
+    }
+  }
 }
 
 const Coordinate &Animal::getPosition() const noexcept {
@@ -63,6 +75,19 @@ void Animal::setNextDestinationPosition(
 
 bool Animal::update(float dt)
 {
+  // update coordinate map pre-move
+
+  if (coordinateMap_.find(position_) != coordinateMap_.end())
+  {
+    auto& vector = coordinateMap_.at(position_);
+    vector.erase(std::remove(vector.begin(), vector.end(), 2), vector.end());
+    if (vector.empty())
+    {
+      coordinateMap_.erase(position_);
+    }
+  }
+
+  // state machine
   switch (state_)
   {
   case State::IDLE:
@@ -83,6 +108,9 @@ bool Animal::update(float dt)
   default:
     break;
   }
+
+  // update coordinate map post_move
+  coordinateMap_[position_].emplace_back(2);
 
   return true;
 }

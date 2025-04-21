@@ -15,9 +15,18 @@
 namespace raygates
 {
 
+std::unordered_map<Coordinate, std::vector<u32>> coordinateMap_;
 
 namespace
 {
+
+[[nodiscard]] u32 generateId()
+{
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+  static std::uniform_int_distribution<u32> dist;
+  return dist(gen);
+}
 
 [[nodiscard]] Coordinate getRandomWalkablePosition(TerrainGenerator* terrain, u16 width, u16 height)
 {
@@ -41,22 +50,27 @@ namespace
 
 }
 
-Raygates::Raygates(Config* config) : config_(config)
-, windowWidth_(config->get()["window"]["width"].get<u16>())
-, windowHeight_(config->get()["window"]["height"].get<u16>())
-, mapWidth_(config->get()["map"]["width"].get<u16>())
-, mapHeight_(config->get()["map"]["height"].get<u16>())
-, targetFPS_(config->get()["targetFPS"].get<u16>())
-, expectedDeltaTime_(1.0f / static_cast<f32>(targetFPS_))
-  , window(windowWidth_, windowHeight_, PROJECT_NAME, targetFPS_)
-{
+Raygates::Raygates(Config *config)
+    : config_(config),
+      windowWidth_(config->get()["window"]["width"].get<u16>()),
+      windowHeight_(config->get()["window"]["height"].get<u16>()),
+      mapWidth_(config->get()["map"]["width"].get<u16>()),
+      mapHeight_(config->get()["map"]["height"].get<u16>()),
+      targetFPS_(config->get()["targetFPS"].get<u16>()),
+      expectedDeltaTime_(1.0f / static_cast<f32>(targetFPS_)),
+      window(windowWidth_, windowHeight_, PROJECT_NAME, targetFPS_),
+      coordinateMap_() {
 
-  resourceMap_["rabbit"] = std::make_shared<Texture2D>(LoadTexture("../resources/textures/rabbit.png"));
-  resourceMap_["wolf"] = std::make_shared<Texture2D>(LoadTexture("../resources/textures/wolf.png"));
-  resourceMap_["herb"] = std::make_shared<Texture2D>(LoadTexture("../resources/textures/herb.png"));
+  resourceMap_["rabbit"] = std::make_shared<Texture2D>(
+      LoadTexture("../resources/textures/rabbit.png"));
+  resourceMap_["wolf"] = std::make_shared<Texture2D>(
+      LoadTexture("../resources/textures/wolf.png"));
+  resourceMap_["herb"] = std::make_shared<Texture2D>(
+      LoadTexture("../resources/textures/herb.png"));
 
   terrainGenerator_ = std::make_unique<TerrainGenerator>(mapWidth_, mapHeight_);
-  terrainLoadingThread_ = std::thread(&TerrainGenerator::generate, terrainGenerator_.get());
+  terrainLoadingThread_ =
+      std::thread(&TerrainGenerator::generate, terrainGenerator_.get());
 }
 
 Raygates::~Raygates()
@@ -106,30 +120,32 @@ void Raygates::initSimulation()
   {
     Coordinate position = getRandomWalkablePosition(terrainGenerator_.get(),
                                                  mapWidth_, mapHeight_);
+
     const auto rabbit = std::make_shared<Rabbit>(
-        position, resourceMap_.at("rabbit"), *terrainGenerator_.get(), stats);
-    animals_.emplace_back(rabbit);
+    position, resourceMap_.at("rabbit"), *terrainGenerator_.get(), stats, coordinateMap_);
+    animals_.try_emplace(generateId(),rabbit);
   }
 
   for (u16 i = 0;
        i < config_->get()["simulation"]["herb"]["initialNumber"].get<u16>();
-       i++) {
+       i++)
+  {
     Coordinate position = getRandomPositionOfType(
         terrainGenerator_.get(), TerrainType::GRASS, mapWidth_, mapHeight_);
     const auto plant =
-        std::make_shared<Plant>(position, resourceMap_.at("herb"));
-    plants_.emplace_back(plant);
+        std::make_shared<Plant>(position, resourceMap_.at("herb"), coordinateMap_);
+    plants_.try_emplace(generateId(),plant);
   }
 }
 
 void Raygates::updateEntities()
 {
-  for (const auto &animal : animals_)
+  for (const auto &[key, animal] : animals_)
   {
     std::ignore = animal->update(expectedDeltaTime_);
   }
 
-  for (const auto &plant : plants_)
+  for (const auto &[key, plant] : plants_)
   {
     std::ignore = plant->update();
   }

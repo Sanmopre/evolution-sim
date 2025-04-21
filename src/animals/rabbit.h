@@ -5,7 +5,7 @@
 class Rabbit : public Animal
 {
 public:
-  Rabbit(Coordinate position, std::shared_ptr<Texture2D> texture, const TerrainGenerator& terrainGenerator, const Stats& stats);
+  Rabbit(Coordinate position, std::shared_ptr<Texture2D> texture, const TerrainGenerator& terrainGenerator, const Stats& stats, std::unordered_map<Coordinate, std::vector<u32>>& coordinateMap);
 
 };
 
