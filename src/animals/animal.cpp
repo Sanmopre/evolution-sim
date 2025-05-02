@@ -9,6 +9,9 @@
 #include <ostream>
 #include <spdlog/fmt/bundled/core.h>
 
+
+const std::vector<std::string_view> deadlyMetrics {HUNGER_KEY, THIRST_KEY};
+
 namespace
 {
 
@@ -115,13 +118,12 @@ bool Animal::update(float dt)
   // update coordinate map post_move
   coordinateMap_[position_].emplace_back(id);
 
-  return true;
+  return updateMetrics(dt);
 }
 
 void Animal::updatePosition(float dt)
 {
-  if (currentPath_.empty())
-  {
+  if (currentPath_.empty()) {
     state_ = State::IDLE;
     return;
   }
@@ -137,17 +139,30 @@ void Animal::updatePosition(float dt)
 
   currentTileIndex_ += tilesToMove;
 
-  if (currentTileIndex_ >= currentPath_.size())
-  {
+  if (currentTileIndex_ >= currentPath_.size()) {
     position_ = currentPath_.back();
     currentPath_.clear();
     currentTileIndex_ = 0;
     state_ = State::IDLE;
-  }
-  else
-  {
+  } else {
     position_ = currentPath_[currentTileIndex_ - 1];
   }
+}
+
+bool Animal::updateMetrics(f32 dt)
+{
+  for (auto& [key, value] : metrics_)
+  {
+    value->value = value->value + value->incrementPerUpdate * dt;
+    if (value->value >= value->maxValue)
+    {
+      if (std::find(deadlyMetrics.begin(), deadlyMetrics.end(), key) != deadlyMetrics.end())
+      {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 void Animal::updateListOfInRadiusEntities()

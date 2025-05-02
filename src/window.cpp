@@ -1,7 +1,3 @@
-//
-// Created by sanmopre on 4/9/25.
-//
-
 #include "window.h"
 
 // raylib
@@ -10,11 +6,12 @@
 #include "raymath.h"
 #include "style_terminal.h"
 
+// std
 #include <iostream>
-
 #include <ostream>
 #include <string>
-#include <algorithm>
+
+#define TEXTURE_SCALE 18.0f
 
 namespace raygates
 {
@@ -85,13 +82,13 @@ const UIState& Window::render(const std::map<u32, std::shared_ptr<Animal>>& anim
                         static_cast<f32>(animal->getTexture().height)};
     Rectangle destination = {
          static_cast<f32>(animalPosition.x), static_cast<f32>(animalPosition.y),
-        (static_cast<f32>(animal->getTexture().width) / 3.0f) / camera_.zoom,
-        (static_cast<f32>(animal->getTexture().height) / 3.0f) /
+        (static_cast<f32>(animal->getTexture().width) / TEXTURE_SCALE) / camera_.zoom,
+        (static_cast<f32>(animal->getTexture().height) / TEXTURE_SCALE) /
             camera_.zoom};
     Vector2 origin = {static_cast<f32>(animal->getTexture().width) / 2.0f /
-                          3.0f / camera_.zoom,
+                          TEXTURE_SCALE / camera_.zoom,
                       static_cast<f32>(animal->getTexture().height) / 2.0f /
-                          3.0f / camera_.zoom};
+                          TEXTURE_SCALE / camera_.zoom};
 
     DrawTexturePro(animal->getTexture(), source, destination, origin, 0.0f,
                    WHITE);
@@ -103,16 +100,16 @@ const UIState& Window::render(const std::map<u32, std::shared_ptr<Animal>>& anim
 
     // Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin,
     // f32 rotation, Color tint
-    Rectangle source = {0, 0, static_cast<f32>(plant->getTexture().width),
+    const Rectangle source = {0, 0, static_cast<f32>(plant->getTexture().width),
                         static_cast<f32>(plant->getTexture().height)};
-    Rectangle destination = {
+    const Rectangle destination = {
         static_cast<f32>(plantPosition.x), static_cast<f32>(plantPosition.y),
-        (static_cast<f32>(plant->getTexture().width) / 3.0f) / camera_.zoom,
-        (static_cast<f32>(plant->getTexture().height) / 3.0f) / camera_.zoom};
-    Vector2 origin = {static_cast<f32>(plant->getTexture().width) / 2.0f /
-                          3.0f / camera_.zoom,
-                      static_cast<f32>(plant->getTexture().height) / 2.0f /
-                          3.0f / camera_.zoom};
+        (static_cast<f32>(plant->getTexture().width) / TEXTURE_SCALE) / camera_.zoom,
+        (static_cast<f32>(plant->getTexture().height) / TEXTURE_SCALE) / camera_.zoom};
+    const Vector2 origin = {static_cast<f32>(plant->getTexture().width) / 2.0F /
+                          TEXTURE_SCALE / camera_.zoom,
+                      static_cast<f32>(plant->getTexture().height) / 2.0F /
+                          TEXTURE_SCALE / camera_.zoom};
 
     DrawTexturePro(plant->getTexture(), source, destination, origin, 0.0f,
                    WHITE);

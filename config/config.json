@@ -3,13 +3,13 @@
     "targetFPS": 200,
     "window" :
     {
-        "width": 1920,
-        "height": 1080
+        "width": 1280,
+        "height": 720
     },
     "map" :
     {
-        "width": 1920,
-        "height": 1080
+        "width": 1280,
+        "height": 720
     },
     "simulation":
     {
@@ -20,7 +20,7 @@
             "speed": 10.0,
             "visibilityRadius": 15
         },
-        "herb":
+        "berries":
         {
             "initialNumber": 130
         }

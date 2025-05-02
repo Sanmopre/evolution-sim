@@ -62,11 +62,11 @@ Raygates::Raygates(Config *config)
       coordinateMap_() {
 
   resourceMap_["rabbit"] = std::make_shared<Texture2D>(
-      LoadTexture("../resources/textures/rabbit2.png"));
+      LoadTexture("../resources/textures/rabbit.png"));
   resourceMap_["wolf"] = std::make_shared<Texture2D>(
       LoadTexture("../resources/textures/wolf.png"));
-  resourceMap_["herb"] = std::make_shared<Texture2D>(
-      LoadTexture("../resources/textures/bush.png"));
+  resourceMap_["berries"] = std::make_shared<Texture2D>(
+      LoadTexture("../resources/textures/berries.png"));
 
   terrainGenerator_ = std::make_unique<TerrainGenerator>(mapWidth_, mapHeight_);
   terrainLoadingThread_ =
@@ -130,27 +130,42 @@ void Raygates::initSimulation()
   }
 
   for (u16 i = 0;
-       i < config_->get()["simulation"]["herb"]["initialNumber"].get<u16>();
+       i < config_->get()["simulation"]["berries"]["initialNumber"].get<u16>();
        i++)
   {
     Coordinate position = getRandomPositionOfType(
         terrainGenerator_.get(), TerrainType::GRASS, mapWidth_, mapHeight_);
     const auto id = generateId();
-    const auto plant = std::make_shared<Plant>(id, position, resourceMap_.at("herb"), coordinateMap_);
+    const auto plant = std::make_shared<Plant>(id, position, resourceMap_.at("berries"), coordinateMap_);
     plants_.try_emplace(id,plant);
   }
 }
 
 void Raygates::updateEntities()
 {
+  std::vector<u32> entitiesToDelete;
+  entitiesToDelete.reserve(animals_.size() + plants_.size());
+
   for (const auto &[key, animal] : animals_)
   {
-    std::ignore = animal->update(expectedDeltaTime_);
+    if (!animal->update(expectedDeltaTime_))
+    {
+      entitiesToDelete.emplace_back(key);
+    }
   }
 
   for (const auto &[key, plant] : plants_)
   {
-    std::ignore = plant->update();
+    if (!plant->update())
+    {
+      entitiesToDelete.emplace_back(key);
+    }
+  }
+
+  for (const auto& key : entitiesToDelete)
+  {
+    animals_.erase(key);
+    plants_.erase(key);
   }
 }
 

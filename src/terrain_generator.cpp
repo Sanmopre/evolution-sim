@@ -13,7 +13,7 @@
 
 namespace {
 
-f32 getRandomf32(f32 min = -6.0f, f32 max = 0.0f) {
+f32 getRandomf32(f32 min = -20.0f, f32 max = 0.0f) {
   static std::random_device rd;
   static std::mt19937 gen(rd()); // Mersenne Twister engine
   std::uniform_real_distribution<f32> dist(min, max);
@@ -57,7 +57,7 @@ void TerrainGenerator::generate() {
   noise.SetFractalLacunarity(1.9);
 
   // Create pixel data in RGBA format
-  unsigned char *pixels = (unsigned char *)malloc(width_ * height_ * 4);
+  const auto pixels =  static_cast<unsigned char *>(malloc(width_ * height_ * 4));
 
   for (i64 y = 0; y < height_; y++)
   {
@@ -66,8 +66,8 @@ void TerrainGenerator::generate() {
 
     for (i64 x = 0; x < width_; x++)
     {
-      const auto noiseValue = (noise.GetNoise((f32)x, (f32)y) + 1.0) / 2.0;
-      Color tileColor = RAYWHITE;
+      const auto noiseValue = (noise.GetNoise(static_cast<f32>(x), static_cast<f32>(y)) + 1.0) / 2.0;
+      auto tileColor = RAYWHITE;
 
       for (const auto &[key, value] : rangeMap_) {
         if (noiseValue >= value.min && noiseValue <= value.max) {
@@ -77,13 +77,13 @@ void TerrainGenerator::generate() {
         }
       }
 
-      const auto i = x + (y * width_);
-      pixels[(i * 4) + 0] = tileColor.r;
-      pixels[(i * 4) + 1] = tileColor.g + static_cast<i64>(getRandomf32());
-      pixels[(i * 4) + 2] = tileColor.b + static_cast<i64>(getRandomf32());
-      pixels[(i * 4) + 3] = tileColor.a + static_cast<i64>(getRandomf32());
+      const auto tile = x + (y * width_);
+      pixels[(tile * 4) + 0] = tileColor.r;
+      pixels[(tile * 4) + 1] = tileColor.g + static_cast<i64>(getRandomf32());
+      pixels[(tile * 4) + 2] = tileColor.b + static_cast<i64>(getRandomf32());
+      pixels[(tile * 4) + 3] = tileColor.a + static_cast<i64>(getRandomf32());
 
-      loadingProgress_ = static_cast<f32>(i) / static_cast<f32>(width_ * height_) * 100.0;
+      loadingProgress_ = static_cast<f32>(tile) / static_cast<f32>(width_ * height_) * 100.0;
     }
     terrainType_.emplace_back(terrainTypeLine);
   }

@@ -8,17 +8,31 @@
 #include <string>
 
 
+#define HUNGER_KEY "hunger"
+#define THIRST_KEY "thirst"
+#define NEED_TO_REPRODUCE_KEY "need_to_reproduce"
+
+
+
 struct Stats
 {
   float speed;
   int visibilityRadius;
 };
 
-struct Metrics
+struct Metric
 {
-  float hunger;
-  float thirst;
-  float needToReproduce;
+  Metric(f32 maxValue, f32 incrementPerUpdate)
+    :
+      value(0.0f),
+      maxValue(maxValue),
+      incrementPerUpdate(incrementPerUpdate)
+  {
+  }
+
+  f32 value;
+  const f32 maxValue;
+  const f32 incrementPerUpdate;
 };
 
 enum class State
@@ -42,10 +56,11 @@ public:
   void setNextRelativePosition(const Coordinate& nextRelativePosition) noexcept;
   void setNextDestinationPosition(const Coordinate& nextDestinationPosition) noexcept;
 
-  [[nodiscard]] bool update(float dt);
+  [[nodiscard]] bool update(f32 dt);
 
 private:
-  void updatePosition(float dt);
+  void updatePosition(f32 dt);
+  [[nodiscard]] bool updateMetrics(f32 dt);
   void updateListOfInRadiusEntities();
 
 private:
@@ -56,14 +71,16 @@ private:
   std::shared_ptr<Texture2D> texture_;
   std::vector<u32> listOfInRadiusEntities_;
 
+protected:
+  std::map<std::string_view, std::shared_ptr<Metric>> metrics_ {};
+
 private:
   Stats stats_;
-  Metrics metrics_;
   State state_ = State::IDLE;
 
 private:
   Path currentPath_;
-  float tilesToMoveThisFrame_ = 0.0f;
+  f32 tilesToMoveThisFrame_ = 0.0f;
   int currentTileIndex_ = 0;
 };
 
