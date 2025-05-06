@@ -35,6 +35,9 @@ add_executable(${PROJECT_NAME} ${SOURCES}
         src/animals/wolf.cpp
         src/animals/wolf.h
         src/plants/plant.cpp
-        src/plants/plant.h)
+        src/plants/plant.h
+        src/entities/entity_manager.h
+        src/entities/entity_manager.cpp
+)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
