@@ -1,28 +1,23 @@
 {
-    "logLevel": "info",
-    "targetFPS": 200,
-    "window" :
-    {
-        "width": 1280,
-        "height": 720
+  "logLevel": "info",
+  "targetFPS": 200,
+  "window": {
+    "width": 1280,
+    "height": 720
+  },
+  "map": {
+    "width": 1280,
+    "height": 720
+  },
+  "simulation": {
+    "speed": 1,
+    "rabbit": {
+      "initialNumber": 100,
+      "speed": 10.0,
+      "visibilityRadius": 15
     },
-    "map" :
-    {
-        "width": 1280,
-        "height": 720
-    },
-    "simulation":
-    {
-        "speed": 1,
-        "rabbit":
-        {
-            "initialNumber": 100,
-            "speed": 10.0,
-            "visibilityRadius": 15
-        },
-        "berries":
-        {
-            "initialNumber": 130
-        }
+    "berries": {
+      "initialNumber": 130
     }
+  }
 }

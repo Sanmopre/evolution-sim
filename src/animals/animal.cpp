@@ -139,12 +139,15 @@ void Animal::updatePosition(float dt)
 
   currentTileIndex_ += tilesToMove;
 
-  if (currentTileIndex_ >= currentPath_.size()) {
+  if (currentTileIndex_ >= currentPath_.size())
+  {
     position_ = currentPath_.back();
     currentPath_.clear();
     currentTileIndex_ = 0;
     state_ = State::IDLE;
-  } else {
+  }
+  else
+  {
     position_ = currentPath_[currentTileIndex_ - 1];
   }
 }
