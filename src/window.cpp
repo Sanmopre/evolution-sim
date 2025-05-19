@@ -28,6 +28,14 @@ Window::Window(int width, int height, const std::string &title, int targetFps)
 
   shader_ = LoadShader("../resources/shaders/vertex.glsl",
                        "../resources/shaders/fragment.glsl");
+
+  // Load textures
+  animalResourceMap_[AnimalType::RABBIT] = std::make_shared<Texture2D>(
+    LoadTexture("../resources/textures/rabbit.png"));
+  animalResourceMap_[AnimalType::WOLF] = std::make_shared<Texture2D>(
+      LoadTexture("../resources/textures/wolf.png"));
+  plantResourceMap_[PlantType::BERRY] = std::make_shared<Texture2D>(
+      LoadTexture("../resources/textures/berries.png"));
 }
 
 Window::~Window() {
@@ -36,8 +44,7 @@ Window::~Window() {
 }
 
 const UIState &
-Window::render(const std::map<u32, std::shared_ptr<Animal>> &animals,
-               const std::map<u32, std::shared_ptr<Plant>> &plants,
+Window::render(const entt::registry &registry,
                TerrainGenerator *terrain) {
   if (WindowShouldClose()) {
     uiState_.windowShouldClose = true;

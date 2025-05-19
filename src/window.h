@@ -1,10 +1,10 @@
 #pragma once
 
-// std
-#include "animals/animal.h"
-#include "plants/plant.h"
+#include "entt/entt.hpp"
 #include "terrain_generator.h"
+#include "entities/entity_manager.h"
 
+// std
 #include <memory>
 #include <string>
 
@@ -26,8 +26,9 @@ class Window
 public:
   Window(int width, int height, const std::string& title, int targetFps);
   ~Window();
-  [[nodiscard]] const UIState& render(const std::map<u32, std::shared_ptr<Animal>>& animals, const std::map<u32, std::shared_ptr<Plant>>& plants, TerrainGenerator* terrain);
+  [[nodiscard]] const UIState& render(const entt::registry& registry, TerrainGenerator* terrain);
   [[nodiscard]] bool renderLoadingScreen(float value) const noexcept;
+
 private:
   void drawPath(const Path& path)const noexcept;
   void drawUI() noexcept;
@@ -45,6 +46,10 @@ private:
 private:
   bool sliderPressed_ = false;
   UIState uiState_;
+
+private:
+  std::unordered_map<AnimalType, std::shared_ptr<Texture2D>> animalResourceMap_;
+  std::unordered_map<PlantType, std::shared_ptr<Texture2D>> plantResourceMap_;
 };
 
 } // raygates

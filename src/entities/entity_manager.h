@@ -45,9 +45,11 @@ struct Metric {
 using Metrics = std::unordered_map<MetricKey, Metric>;
 using Stats = std::unordered_map<StatsKey, f64>;
 
+typedef std::vector<entt::entity> EntityList;
+
 class EntityManager {
 public:
-  EntityManager();
+  EntityManager(const TerrainGenerator& terrainGenerator);
   ~EntityManager();
 
   [[nodiscard]] const entt::registry &getRegistry() const noexcept;
@@ -55,9 +57,21 @@ public:
                     const Metrics &metrics, const Stats &stats);
   void createEntity(PlantType type, const Coordinate &coordinate,
                     const Metrics &metrics, const Stats &stats);
-  void updateEntities();
+  void updateEntities(f32 dt);
+
+private:
+  // Entity methods
+  bool updateEntity(f32 dt, entt::entity entity);
+  void updatePosition(f32 dt, entt::entity entity);
+  [[nodiscard]] bool updateMetrics(f32 dt, entt::entity entity);
+  void updateListOfInRadiusEntities(entt::entity entity);
+  void setNextDestinationPosition(const Coordinate& nextDestinationPosition, entt::entity entity) noexcept;
 
 private:
   entt::registry registry_;
   std::unordered_map<Coordinate, std::vector<entt::entity>> entitiesMap_;
+
+private:
+  const TerrainGenerator& terrainGenerator_;
+  std::unordered_map<Coordinate, std::vector<entt::entity>> coordinateMap_;
 };

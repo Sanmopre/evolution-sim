@@ -1,11 +1,11 @@
 #pragma once
 
-#include "animals/animal.h"
 #include "config.h"
-#include "plants/plant.h"
 
 #include "terrain_generator.h"
 #include "window.h"
+
+#include "entities/entity_manager.h"
 
 namespace raygates
 {
@@ -41,12 +41,10 @@ private:
 private:
   // Entity maps
   std::unique_ptr<TerrainGenerator> terrainGenerator_;
-  std::map<u32, std::shared_ptr<Animal>> animals_;
-  std::map<u32, std::shared_ptr<Plant>> plants_;
 
 private:
-  std::unordered_map<std::string, std::shared_ptr<Texture2D>> resourceMap_;
   std::unordered_map<Coordinate, std::vector<u32>> coordinateMap_;
+  std::unique_ptr<EntityManager> entityManager_;
 };
 
 }

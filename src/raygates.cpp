@@ -59,7 +59,8 @@ Raygates::Raygates(Config *config)
       targetFPS_(config->get()["targetFPS"].get<u16>()),
       expectedDeltaTime_(1.0f / static_cast<f32>(targetFPS_)),
       window(windowWidth_, windowHeight_, PROJECT_NAME, targetFPS_),
-      coordinateMap_() {
+      coordinateMap_()
+{
 
   resourceMap_["rabbit"] = std::make_shared<Texture2D>(
       LoadTexture("../resources/textures/rabbit.png"));
@@ -69,6 +70,7 @@ Raygates::Raygates(Config *config)
       LoadTexture("../resources/textures/berries.png"));
 
   terrainGenerator_ = std::make_unique<TerrainGenerator>(mapWidth_, mapHeight_);
+  entityManager_ = std::make_unique<EntityManager>(*terrainGenerator_);
   terrainLoadingThread_ =
       std::thread(&TerrainGenerator::generate, terrainGenerator_.get());
 }
