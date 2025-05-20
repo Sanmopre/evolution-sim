@@ -11,11 +11,10 @@
   },
   "simulation": {
     "speed": 1,
-    "rabbit": {
-      "initialNumber": 100,
-      "speed": 10.0,
-      "visibilityRadius": 15
-    },
+    "rabbits": 70,
+    "wolves": 30,
+    "deers": 50,
+    "bears": 15,
     "berries": {
       "initialNumber": 130
     }

@@ -34,11 +34,26 @@ Window::Window(int width, int height, const std::string &title, int targetFps)
     LoadTexture("../resources/textures/rabbit.png"));
   animalResourceMap_[AnimalType::WOLF] = std::make_shared<Texture2D>(
       LoadTexture("../resources/textures/wolf.png"));
+  animalResourceMap_[AnimalType::DEER] = std::make_shared<Texture2D>(
+    LoadTexture("../resources/textures/deer.png"));
+  animalResourceMap_[AnimalType::BEAR] = std::make_shared<Texture2D>(
+  LoadTexture("../resources/textures/bear.png"));
   plantResourceMap_[PlantType::BERRY] = std::make_shared<Texture2D>(
       LoadTexture("../resources/textures/berries.png"));
 }
 
-Window::~Window() {
+Window::~Window()
+{
+  for (const auto &[key, value] : animalResourceMap_)
+  {
+    UnloadTexture(*value);
+  }
+
+  for (const auto &[key, value] : plantResourceMap_)
+  {
+    UnloadTexture(*value);
+  }
+
   UnloadShader(shader_);
   CloseWindow();
 }
@@ -75,48 +90,55 @@ Window::render(const entt::registry &registry,
   BeginShaderMode(shader_);
   EndShaderMode();
 
-  for (const auto &[key, animal] : animals) {
-    const auto animalPosition = animal->getPosition();
+  const auto animalsView = registry.view<AnimalType, Coordinate>();
+  const auto plantsView = registry.view<PlantType, Coordinate>();
 
+
+  for (const auto &animal : animalsView)
+  {
+    const auto& animalPosition = registry.get<Coordinate>(animal);
+    const auto& texture = animalResourceMap_.at(registry.get<AnimalType>(animal));
     // Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin,
     // f32 rotation, Color tint
     const Rectangle source = {0, 0,
-                              static_cast<f32>(animal->getTexture().width),
-                              static_cast<f32>(animal->getTexture().height)};
+                              static_cast<f32>(texture->width),
+                              static_cast<f32>(texture->height)};
     const Rectangle destination = {
         static_cast<f32>(animalPosition.x), static_cast<f32>(animalPosition.y),
-        (static_cast<f32>(animal->getTexture().width) / TEXTURE_SCALE) /
+        (static_cast<f32>(texture->width) / TEXTURE_SCALE) /
             camera_.zoom,
-        (static_cast<f32>(animal->getTexture().height) / TEXTURE_SCALE) /
+        (static_cast<f32>(texture->height) / TEXTURE_SCALE) /
             camera_.zoom};
-    const Vector2 origin = {static_cast<f32>(animal->getTexture().width) /
+    const Vector2 origin = {static_cast<f32>(texture->width) /
                                 2.0f / TEXTURE_SCALE / camera_.zoom,
-                            static_cast<f32>(animal->getTexture().height) /
+                            static_cast<f32>(texture->height) /
                                 2.0f / TEXTURE_SCALE / camera_.zoom};
 
-    DrawTexturePro(animal->getTexture(), source, destination, origin, 0.0f,
+    DrawTexturePro(*texture, source, destination, origin, 0.0f,
                    WHITE);
   }
 
-  for (const auto &[key, plant] : plants) {
-    const auto plantPosition = plant->getPosition();
+  for (const auto plant : plantsView)
+  {
+    const auto& plantPosition = registry.get<Coordinate>(plant);
+    const auto& texture = plantResourceMap_.at(registry.get<PlantType>(plant));
 
     // Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin,
     // f32 rotation, Color tint
-    const Rectangle source = {0, 0, static_cast<f32>(plant->getTexture().width),
-                              static_cast<f32>(plant->getTexture().height)};
+    const Rectangle source = {0, 0, static_cast<f32>(texture->width),
+                              static_cast<f32>(texture->height)};
     const Rectangle destination = {
         static_cast<f32>(plantPosition.x), static_cast<f32>(plantPosition.y),
-        (static_cast<f32>(plant->getTexture().width) / TEXTURE_SCALE) /
+        (static_cast<f32>(texture->width) / TEXTURE_SCALE) /
             camera_.zoom,
-        (static_cast<f32>(plant->getTexture().height) / TEXTURE_SCALE) /
+        (static_cast<f32>(texture->height) / TEXTURE_SCALE) /
             camera_.zoom};
-    const Vector2 origin = {static_cast<f32>(plant->getTexture().width) / 2.0F /
+    const Vector2 origin = {static_cast<f32>(texture->width) / 2.0F /
                                 TEXTURE_SCALE / camera_.zoom,
-                            static_cast<f32>(plant->getTexture().height) /
+                            static_cast<f32>(texture->height) /
                                 2.0F / TEXTURE_SCALE / camera_.zoom};
 
-    DrawTexturePro(plant->getTexture(), source, destination, origin, 0.0f,
+    DrawTexturePro(*texture, source, destination, origin, 0.0f,
                    WHITE);
   }
 

@@ -20,7 +20,6 @@ public:
 
 private:
   void initSimulation();
-  void updateEntities();
 
 private:
   std::thread terrainLoadingThread_;
@@ -43,7 +42,6 @@ private:
   std::unique_ptr<TerrainGenerator> terrainGenerator_;
 
 private:
-  std::unordered_map<Coordinate, std::vector<u32>> coordinateMap_;
   std::unique_ptr<EntityManager> entityManager_;
 };
 

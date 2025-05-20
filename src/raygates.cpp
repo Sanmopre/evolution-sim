@@ -4,13 +4,12 @@
 
 #include "raygates.h"
 
-#include "animals/rabbit.h"
-#include "animals/wolf.h"
-
 #include <global.h>
 #include <iostream>
 #include <ostream>
 #include <random>
+
+#include "entities/stats.h"
 
 namespace raygates {
 
@@ -58,31 +57,21 @@ Raygates::Raygates(Config *config)
       mapHeight_(config->get()["map"]["height"].get<u16>()),
       targetFPS_(config->get()["targetFPS"].get<u16>()),
       expectedDeltaTime_(1.0f / static_cast<f32>(targetFPS_)),
-      window(windowWidth_, windowHeight_, PROJECT_NAME, targetFPS_),
-      coordinateMap_()
+      window(windowWidth_, windowHeight_, PROJECT_NAME, targetFPS_)
 {
-
-  resourceMap_["rabbit"] = std::make_shared<Texture2D>(
-      LoadTexture("../resources/textures/rabbit.png"));
-  resourceMap_["wolf"] = std::make_shared<Texture2D>(
-      LoadTexture("../resources/textures/wolf.png"));
-  resourceMap_["berries"] = std::make_shared<Texture2D>(
-      LoadTexture("../resources/textures/berries.png"));
-
   terrainGenerator_ = std::make_unique<TerrainGenerator>(mapWidth_, mapHeight_);
   entityManager_ = std::make_unique<EntityManager>(*terrainGenerator_);
   terrainLoadingThread_ =
       std::thread(&TerrainGenerator::generate, terrainGenerator_.get());
 }
 
-Raygates::~Raygates() {
+Raygates::~Raygates()
+{
   terrainLoadingThread_.join();
-  for (const auto &[key, value] : resourceMap_) {
-    UnloadTexture(*value);
-  }
 }
 
-bool Raygates::update() {
+bool Raygates::update()
+{
   if (!hasTerrainFinishedGenerating_) {
     if (terrainGenerator_->getLoadingProgress() >= 100.0f) {
       terrainLoadingThread_.join();
@@ -97,70 +86,68 @@ bool Raygates::update() {
   }
 
   if (!uiState_.simulationStop) {
-    for (u8 i = 0; i < static_cast<u8>(uiState_.simulationSpeedSlider); i++) {
-      updateEntities();
+    for (u8 i = 0; i < static_cast<u8>(uiState_.simulationSpeedSlider); i++)
+    {
+      entityManager_->updateEntities(expectedDeltaTime_);
     }
   }
 
-  uiState_ = window.render(animals_, plants_, terrainGenerator_.get());
+  uiState_ = window.render(entityManager_->getRegistry(), terrainGenerator_.get());
 
   return !uiState_.windowShouldClose;
 }
 
-void Raygates::initSimulation() {
-  Stats stats;
-  stats.speed = config_->get()["simulation"]["rabbit"]["speed"].get<f32>();
-  stats.visibilityRadius =
-      config_->get()["simulation"]["rabbit"]["visibilityRadius"].get<u16>();
+void Raygates::initSimulation()
+{
+  const auto rabbitData = getRabbitData();
 
   for (u16 i = 0;
-       i < config_->get()["simulation"]["rabbit"]["initialNumber"].get<u16>();
-       i++) {
+       i < config_->get()["simulation"]["rabbits"].get<u16>();
+       i++)
+  {
     Coordinate position = getRandomWalkablePosition(terrainGenerator_.get(),
-                                                    mapWidth_, mapHeight_);
-    const auto id = generateId();
-    const auto rabbit = std::make_shared<Rabbit>(
-        id, position, resourceMap_.at("rabbit"), *terrainGenerator_.get(),
-        stats, coordinateMap_);
-    animals_.try_emplace(id, rabbit);
+                                                mapWidth_, mapHeight_);
+
+    entityManager_->createEntity(AnimalType::RABBIT, position, rabbitData.first, rabbitData.second);
   }
 
-  for (auto a : animals_) {
-    std::cout << typeid(*a.second.get()).name() << "\n";
-  }
+  const auto wolfData = getWolfData();
 
   for (u16 i = 0;
-       i < config_->get()["simulation"]["berries"]["initialNumber"].get<u16>();
-       i++) {
-    Coordinate position = getRandomPositionOfType(
-        terrainGenerator_.get(), TerrainType::GRASS, mapWidth_, mapHeight_);
-    const auto id = generateId();
-    const auto plant = std::make_shared<Plant>(
-        id, position, resourceMap_.at("berries"), coordinateMap_);
-    plants_.try_emplace(id, plant);
+       i < config_->get()["simulation"]["wolves"].get<u16>();
+       i++)
+  {
+    Coordinate position = getRandomWalkablePosition(terrainGenerator_.get(),
+                                                mapWidth_, mapHeight_);
+
+    entityManager_->createEntity(AnimalType::WOLF, position, wolfData.first, wolfData.second);
   }
+
+  const auto deerData = getDeerData();
+
+  for (u16 i = 0;
+       i < config_->get()["simulation"]["deers"].get<u16>();
+       i++)
+  {
+    Coordinate position = getRandomWalkablePosition(terrainGenerator_.get(),
+                                                mapWidth_, mapHeight_);
+
+    entityManager_->createEntity(AnimalType::DEER, position, deerData.first, deerData.second);
+  }
+
+  const auto bearData = getBearData();
+
+  for (u16 i = 0;
+       i < config_->get()["simulation"]["bears"].get<u16>();
+       i++)
+  {
+    Coordinate position = getRandomWalkablePosition(terrainGenerator_.get(),
+                                                mapWidth_, mapHeight_);
+
+    entityManager_->createEntity(AnimalType::BEAR, position, bearData.first, bearData.second);
+  }
+
 }
 
-void Raygates::updateEntities() {
-  std::vector<u32> entitiesToDelete;
-  entitiesToDelete.reserve(animals_.size() + plants_.size());
-
-  for (const auto &[key, animal] : animals_) {
-    if (!animal->update(expectedDeltaTime_)) {
-      entitiesToDelete.emplace_back(key);
-    }
-  }
-
-  for (const auto &[key, plant] : plants_) {
-    if (!plant->update()) {
-      entitiesToDelete.emplace_back(key);
-    }
-  }
-
-  for (const auto &key : entitiesToDelete) {
-    animals_.erase(key);
-    plants_.erase(key);
-  }
-}
 
 } // namespace raygates

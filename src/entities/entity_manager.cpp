@@ -27,7 +27,7 @@ const entt::registry &EntityManager::getRegistry() const noexcept {
 }
 
 void EntityManager::createEntity(AnimalType type, const Coordinate &coordinate,
-                                 const Metrics &metrics, const Stats &stats)
+                                const Metrics& metrics, const Stats &stats)
 {
   const auto entity = registry_.create();
 
@@ -44,7 +44,7 @@ void EntityManager::createEntity(AnimalType type, const Coordinate &coordinate,
 }
 
 void EntityManager::createEntity(PlantType type, const Coordinate &coordinate,
-                                 const Metrics &metrics, const Stats &stats)
+                                 const Metrics& metrics, const Stats &stats)
 {
   const auto entity = registry_.create();
 
@@ -55,9 +55,12 @@ void EntityManager::createEntity(PlantType type, const Coordinate &coordinate,
   registry_.emplace<Stats>(entity, stats);
 }
 
-void EntityManager::updateEntities(f32 dt) {
+void EntityManager::updateEntities(f32 dt)
+{
   const auto view = registry_.view<AnimalType, Coordinate, Metrics, Stats>();
 
+  std::vector<entt::entity> entitiesToDelete_;
+  entitiesToDelete_.reserve(registry_.view<Coordinate>().size());
   for (const auto &entity : view)
   {
     updateEntity(dt, entity);
@@ -65,6 +68,15 @@ void EntityManager::updateEntities(f32 dt) {
     const Coordinate &coordinate = view.get<Coordinate>(entity);
     entitiesMap_[coordinate].emplace_back(entity);
   }
+
+  for (const auto &entity : entitiesToDelete_)
+  {
+    registry_.destroy(entity);
+    const Coordinate &coordinate = view.get<Coordinate>(entity);
+    std::ignore = coordinate;
+    // TODO: Remoce the entity from the coordinate map
+  }
+
 }
 
 bool EntityManager::updateEntity(f32 dt, entt::entity entity)
@@ -73,11 +85,13 @@ bool EntityManager::updateEntity(f32 dt, entt::entity entity)
   switch (registry_.get<State>(entity))
   {
   case State::IDLE:
+    {
     const auto& tiles = terrainGenerator_.getTilesInRadius(
                                registry_.get<Coordinate>(entity), registry_.get<Stats>(entity).at(StatsKey::VISIBILITY_RANGE));
     setNextDestinationPosition(getRandomWalkablePosition(
         terrainGenerator_, tiles), entity);
     updateListOfInRadiusEntities(entity);
+  }
     break;
   case State::IN_SEARCH_FOR_PARTNER:
     updatePosition(dt, entity);
@@ -135,8 +149,8 @@ bool EntityManager::updateMetrics(f32 dt, entt::entity entity)
 {
   for (auto& [key, value] : registry_.get<Metrics>(entity))
   {
-    value.value = value.value + value.incrementPerUpdate * dt;
-    if (value.value >= value.maxValue)
+    value->value = value->value + value->incrementPerUpdate * dt;
+    if (value->value >= value->maxValue)
     {
       if (std::find(deadlyMetrics.begin(), deadlyMetrics.end(), key) != deadlyMetrics.end())
       {

@@ -42,7 +42,7 @@ struct Metric {
   const f32 incrementPerUpdate;
 };
 
-using Metrics = std::unordered_map<MetricKey, Metric>;
+using Metrics = std::unordered_map<MetricKey, std::shared_ptr<Metric>>;
 using Stats = std::unordered_map<StatsKey, f64>;
 
 typedef std::vector<entt::entity> EntityList;
@@ -54,9 +54,9 @@ public:
 
   [[nodiscard]] const entt::registry &getRegistry() const noexcept;
   void createEntity(AnimalType type, const Coordinate &coordinate,
-                    const Metrics &metrics, const Stats &stats);
+                    const Metrics& metrics, const Stats &stats);
   void createEntity(PlantType type, const Coordinate &coordinate,
-                    const Metrics &metrics, const Stats &stats);
+                    const Metrics& metrics, const Stats &stats);
   void updateEntities(f32 dt);
 
 private:

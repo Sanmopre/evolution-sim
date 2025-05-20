@@ -26,18 +26,11 @@ add_executable(${PROJECT_NAME} ${SOURCES}
         src/raygates.cpp
         src/raygates.h
         external/fastNoiseLite/fastNoiseLite.h
-        src/animals/animal.cpp
-        src/animals/animal.h
         src/terrain_generator.cpp
         src/terrain_generator.h
-        src/animals/rabbit.cpp
-        src/animals/rabbit.h
-        src/animals/wolf.cpp
-        src/animals/wolf.h
-        src/plants/plant.cpp
-        src/plants/plant.h
         src/entities/entity_manager.h
         src/entities/entity_manager.cpp
+        src/entities/stats.h
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
