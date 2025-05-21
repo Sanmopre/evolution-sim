@@ -69,7 +69,6 @@ private:
 
 private:
   entt::registry registry_;
-  std::unordered_map<Coordinate, std::vector<entt::entity>> entitiesMap_;
 
 private:
   const TerrainGenerator& terrainGenerator_;

@@ -64,9 +64,6 @@ void EntityManager::updateEntities(f32 dt)
   for (const auto &entity : view)
   {
     updateEntity(dt, entity);
-
-    const Coordinate &coordinate = view.get<Coordinate>(entity);
-    entitiesMap_[coordinate].emplace_back(entity);
   }
 
   for (const auto &entity : entitiesToDelete_)
@@ -90,7 +87,7 @@ bool EntityManager::updateEntity(f32 dt, entt::entity entity)
                                registry_.get<Coordinate>(entity), registry_.get<Stats>(entity).at(StatsKey::VISIBILITY_RANGE));
     setNextDestinationPosition(getRandomWalkablePosition(
         terrainGenerator_, tiles), entity);
-    updateListOfInRadiusEntities(entity);
+    //updateListOfInRadiusEntities(entity);
   }
     break;
   case State::IN_SEARCH_FOR_PARTNER:
@@ -108,7 +105,8 @@ bool EntityManager::updateEntity(f32 dt, entt::entity entity)
   }
 
   // update coordinate map post_move
-  coordinateMap_[registry_.get<Coordinate>(entity)].emplace_back(entity);
+  // TODO:
+  //coordinateMap_[registry_.get<Coordinate>(entity)].emplace_back(entity);
 
   return updateMetrics(dt, entity);
 }
