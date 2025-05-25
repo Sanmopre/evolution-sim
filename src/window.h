@@ -11,7 +11,7 @@
 
 #define RAYGUI_IMPLEMENTATION
 
-namespace raygates
+namespace evo_sim
 {
 
 struct UIState

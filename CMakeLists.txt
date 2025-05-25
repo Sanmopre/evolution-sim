@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(raygates VERSION 1.0.0)
+project(evolution-sim VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -23,8 +23,8 @@ include_directories("${PROJECT_BINARY_DIR}/src/" "external/raylib-5.5/src")
 file(GLOB SOURCES "src/*.cpp" "src/*.hpp" "src/*.h")
 
 add_executable(${PROJECT_NAME} ${SOURCES}
-        src/raygates.cpp
-        src/raygates.h
+        src/evolution-sim.cpp
+        src/evolution-sim.h
         external/fastNoiseLite/fastNoiseLite.h
         src/terrain_generator.cpp
         src/terrain_generator.h

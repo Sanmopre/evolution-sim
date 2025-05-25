@@ -13,7 +13,7 @@
 
 #define TEXTURE_SCALE 18.0f
 
-namespace raygates {
+namespace evo_sim {
 
 Window::Window(int width, int height, const std::string &title, int targetFps)
     : width_(width), height_(height) {

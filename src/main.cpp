@@ -6,7 +6,7 @@
 #include "spdlog/spdlog.h"
 
 // std
-#include "raygates.h"
+#include "evolution-sim.h"
 
 #include <exception>
 #include <memory>
@@ -26,7 +26,7 @@ auto main() -> int
     spdlog::debug("CXX compiler: {}", CMAKE_CXX_COMPILER);
 
 
-    auto application = std::make_unique<raygates::Raygates>(&config);
+    auto application = std::make_unique<evo_sim::EvolutionSim>(&config);
 
     bool run = true;
     while (run)

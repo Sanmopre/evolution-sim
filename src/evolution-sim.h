@@ -7,14 +7,14 @@
 
 #include "entities/entity_manager.h"
 
-namespace raygates
+namespace evo_sim
 {
 
-class Raygates
+class EvolutionSim
 {
 public:
-  Raygates(Config* config);
-  ~Raygates();
+  EvolutionSim(Config* config);
+  ~EvolutionSim();
 
   [[nodiscard]] bool update();
 

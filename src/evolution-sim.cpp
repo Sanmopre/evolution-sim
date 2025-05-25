@@ -2,7 +2,7 @@
 // Created by sanmopre on 4/10/25.
 //
 
-#include "raygates.h"
+#include "evolution-sim.h"
 
 #include <global.h>
 #include <iostream>
@@ -11,7 +11,7 @@
 
 #include "entities/stats.h"
 
-namespace raygates {
+namespace evo_sim {
 
 std::unordered_map<Coordinate, std::vector<u32>> coordinateMap_;
 
@@ -49,7 +49,7 @@ namespace {
 
 } // namespace
 
-Raygates::Raygates(Config *config)
+EvolutionSim::EvolutionSim(Config *config)
     : config_(config),
       windowWidth_(config->get()["window"]["width"].get<u16>()),
       windowHeight_(config->get()["window"]["height"].get<u16>()),
@@ -65,12 +65,12 @@ Raygates::Raygates(Config *config)
       std::thread(&TerrainGenerator::generate, terrainGenerator_.get());
 }
 
-Raygates::~Raygates()
+EvolutionSim::~EvolutionSim()
 {
   terrainLoadingThread_.join();
 }
 
-bool Raygates::update()
+bool EvolutionSim::update()
 {
   if (!hasTerrainFinishedGenerating_) {
     if (terrainGenerator_->getLoadingProgress() >= 100.0f) {
@@ -97,7 +97,7 @@ bool Raygates::update()
   return !uiState_.windowShouldClose;
 }
 
-void Raygates::initSimulation()
+void EvolutionSim::initSimulation()
 {
   const auto rabbitData = getRabbitData();
 
