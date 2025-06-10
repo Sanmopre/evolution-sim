@@ -3,24 +3,30 @@ project(evolution-sim VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
-option(USE_CLANG_TIDY "Use clang-tidy for static code analysis" OFF)
+find_package(raylib REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(nlohmann_json REQUIRED)
+find_package(EnTT REQUIRED)
 
+option(USE_CLANG_TIDY "Use clang-tidy for static code analysis" OFF)
 if(USE_CLANG_TIDY)
     set(CMAKE_CXX_CLANG_TIDY clang-tidy;--fix-errors)
 endif()
 
-include_directories("src/" "external/")
-
-add_subdirectory("external/raylib-5.5")
-
 configure_file(
-  "${PROJECT_SOURCE_DIR}/src/global.h.in"
-  "${PROJECT_BINARY_DIR}/src/global.h"
+        "${PROJECT_SOURCE_DIR}/src/global.h.in"
+        "${PROJECT_BINARY_DIR}/src/global.h"
 )
 
-include_directories("${PROJECT_BINARY_DIR}/src/" "external/raylib-5.5/src")
+include_directories(
+        "${PROJECT_SOURCE_DIR}/src/"
+        "${PROJECT_BINARY_DIR}/src/"
+        "${PROJECT_SOURCE_DIR}/external/fastNoiseLite/" # For manual FastNoiseLite
+)
 
-file(GLOB SOURCES "src/*.cpp" "src/*.hpp" "src/*.h")
+file(GLOB SOURCES
+        "src/*.cpp" "src/*.hpp" "src/*.h"
+)
 
 add_executable(${PROJECT_NAME} ${SOURCES}
         src/evolution-sim.cpp
@@ -33,4 +39,10 @@ add_executable(${PROJECT_NAME} ${SOURCES}
         src/entities/stats.h
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        raylib
+        spdlog::spdlog
+        nlohmann_json::nlohmann_json
+        EnTT::EnTT
+)

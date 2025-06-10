@@ -3,7 +3,7 @@
 #include "raylib.h"
 
 // fastNoiseLite
-#include "fastNoiseLite/fastNoiseLite.h"
+#include "fastNoiseLite.h"
 
 // std
 #include <algorithm>
