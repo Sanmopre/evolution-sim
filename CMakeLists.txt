@@ -3,12 +3,19 @@ project(evolution-sim VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# where to find our cmake files
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+option(RUN_CONAN_INSTALL "Use Conan to install dependencies" ON)
+option(USE_CLANG_TIDY "Use clang-tidy for static code analysis" OFF)
+
+include(conan)
+
 find_package(raylib REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(EnTT REQUIRED)
 
-option(USE_CLANG_TIDY "Use clang-tidy for static code analysis" OFF)
 if(USE_CLANG_TIDY)
     set(CMAKE_CXX_CLANG_TIDY clang-tidy;--fix-errors)
 endif()
