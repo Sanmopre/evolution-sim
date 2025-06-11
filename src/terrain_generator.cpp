@@ -89,11 +89,13 @@ void TerrainGenerator::generate() {
   }
   loadingProgress_ = 100.0f;
 
-   image_ = {.data = pixels,
-                       .width = width_,
-                       .height = height_,
-                       .mipmaps = 1,
-                       .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
+  image_ = {
+    pixels,
+    width_,
+    height_,
+    1,
+    PIXELFORMAT_UNCOMPRESSED_R8G8B8A8
+};
 }
 
 void TerrainGenerator::createTextureFromImage()

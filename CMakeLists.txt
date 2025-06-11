@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
+
+if(WIN32)
+    cmake_policy(SET CMP0091 NEW)
+endif()
+
 project(evolution-sim VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -10,6 +15,10 @@ option(RUN_CONAN_INSTALL "Use Conan to install dependencies" ON)
 option(USE_CLANG_TIDY "Use clang-tidy for static code analysis" OFF)
 
 include(conan)
+
+if(WIN32)
+    list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/${CONAN_BUILD_TYPE}/generators")
+endif()
 
 find_package(raylib REQUIRED)
 find_package(spdlog REQUIRED)
